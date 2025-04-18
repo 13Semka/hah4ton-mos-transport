@@ -1,4 +1,4 @@
-.PHONY: install run clean test lint format
+.PHONY: install run clean test lint format install-poetry
 
 # Variables
 POETRY := poetry
@@ -6,6 +6,10 @@ PYTHON := $(POETRY) run python
 UVICORN := $(POETRY) run uvicorn
 APP_NAME := apiserver
 APP_PATH := apiserver.main:app
+
+# Install Poetry if not installed
+install-poetry:
+	curl -sSL https://install.python-poetry.org | python3 -
 
 # Install dependencies
 install:
@@ -60,6 +64,7 @@ venv:
 # Help
 help:
 	@echo "Available commands:"
+	@echo "  make install-poetry - Install Poetry package manager"
 	@echo "  make install     - Install dependencies"
 	@echo "  make run        - Run application in development mode"
 	@echo "  make run-prod   - Run application in production mode"
