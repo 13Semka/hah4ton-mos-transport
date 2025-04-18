@@ -1,0 +1,11 @@
+[default]
+debug = false
+api_v1_str = "/api/v1"
+project_name = "API Server"
+environment = "development"
+
+[development]
+debug = true
+
+[production]
+debug = false 
