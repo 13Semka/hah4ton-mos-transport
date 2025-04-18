@@ -1,27 +1,23 @@
 """
 Application settings module.
 """
-from dynaconf import Dynaconf, Validator
+from pydantic_settings import BaseSettings
+from typing import Optional
 
-# Define validators for required settings
-validators = [
-    Validator('ENVIRONMENT', must_exist=True, is_type_of=str),
-    Validator('DEBUG', must_exist=True, is_type_of=bool),
-    Validator('API_V1_STR', must_exist=True, is_type_of=str),
-    Validator('PROJECT_NAME', must_exist=True, is_type_of=str),
-]
+class Settings(BaseSettings):
+    # Основные настройки приложения
+    ENVIRONMENT: str = "development"
+    DEBUG: bool = True
+    API_V1_STR: str = "/api/v1"
+    PROJECT_NAME: str = "API Server"
+    
+    # Настройки 2GIS API
+    TWO_GIS_API_KEY: str
+    TWO_GIS_API_URL: str = "https://2gis.ru/api/v1"
+    
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = True
 
-# Initialize configuration
-settings = Dynaconf(
-    envvar_prefix="APP",
-    settings_files=['apiserver/config/settings.toml', 'apiserver/config/.secrets.toml'],
-    environments=True,
-    load_dotenv=True,
-    validators=validators,
-)
-
-# Create aliases for convenience
-settings.set('DEBUG', settings.get('debug', False))
-settings.set('API_V1_STR', settings.get('api_v1_str', '/api/v1'))
-settings.set('PROJECT_NAME', settings.get('project_name', 'API Server'))
-settings.set('ENVIRONMENT', settings.get('environment', 'development')) 
+settings = Settings() 
