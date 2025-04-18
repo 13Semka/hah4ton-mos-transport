@@ -5,17 +5,22 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 import sys
+import os
 
 from apiserver.config.settings import settings
-from apiserver.app.api.v1.api import api_router
+from apiserver.app.api.v1.router import api_router
 
 # Настройка логирования
-logger.remove()
+logger.remove()  # Удаляем стандартный обработчик
 logger.add(
     sys.stdout,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
     level="INFO"
 )
+
+# Создаем директорию для логов, если её нет
+os.makedirs("logs", exist_ok=True)
+
 logger.add(
     "logs/app.log",
     rotation="1 day",
@@ -40,26 +45,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Подключаем API роутер
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 async def startup_event():
     logger.info("Application startup")
+    logger.info(f"API Documentation: http://localhost:8000{settings.API_V1_STR}/docs")
 
 @app.on_event("shutdown")
 async def shutdown_event():
     logger.info("Application shutdown")
-
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {
-        "message": "Welcome to API Server",
-        "docs_url": f"{settings.API_V1_STR}/docs",
-        "redoc_url": f"{settings.API_V1_STR}/redoc",
-    }
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint."""
-    return {"status": "healthy"} 
