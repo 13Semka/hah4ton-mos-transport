@@ -518,6 +518,45 @@ class MainActivity : BaseActivity() {
             
             override fun afterTextChanged(s: Editable?) {}
         })
+        
+        // Обработчик нажатия кнопки Done на клавиатуре для поля "Откуда"
+        fromAddressEditText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
+                // Автозаполнение адреса, если есть результаты поиска
+                autoCompleteCurrentAddress()
+                // Переход к следующему полю
+                toAddressEditText.requestFocus()
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+        
+        // Обработчик нажатия кнопки Done на клавиатуре для поля "Куда"
+        toAddressEditText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+                // Автозаполнение адреса, если есть результаты поиска
+                autoCompleteCurrentAddress()
+                // Скрытие клавиатуры
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
+                // Если оба поля заполнены, выполняем поиск маршрута
+                if (fromAddressEditText.text?.isNotEmpty() == true && toAddressEditText.text?.isNotEmpty() == true) {
+                    hideSearchResults()
+                    viewModel.loadRoutes()
+                }
+                return@setOnEditorActionListener true
+            }
+            false
+        }
+    }
+    
+    private fun autoCompleteCurrentAddress() {
+        // Получаем первый результат из списка результатов поиска
+        val firstResult = viewModel.searchResults.value?.firstOrNull()
+        if (firstResult != null) {
+            // Применяем выбранный результат
+            onSearchResultSelected(firstResult)
+        }
     }
     
     private fun hasLocationPermission(): Boolean {

@@ -1,11 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <!-- Основные цвета -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="selected_route_background">#E6E3F7</color>
+    
+    <!-- Светлая тема - основные цвета -->
+    <color name="background_light">#FFFFFFFF</color>
+    <color name="surface_light">#FFF5F5F5</color>
+    <color name="card_light">#FFEEEEEE</color>
+    <color name="text_primary_light">#FF000000</color>
+    <color name="text_secondary_light">#FF555555</color>
+    
+    <!-- Темная тема - основные цвета -->
+    <color name="background_dark">#FF121212</color>
+    <color name="surface_dark">#FF1E1E1E</color>
+    <color name="card_dark">#FF2D2D2D</color>
+    <color name="text_primary_dark">#FFFFFFFF</color>
+    <color name="text_secondary_dark">#FFB3B3B3</color>
+    
+    <!-- Элементы UI -->
+    <color name="button_primary">#FF000000</color>
+    <color name="button_secondary">#FF555555</color>
+    <color name="button_text">#FFFFFFFF</color>
+    <color name="input_background">#FFF5F5F5</color>
+    <color name="input_text">#FF000000</color>
+    <color name="divider">#FFDDDDDD</color>
+    
+    <!-- Цвета поиска и результатов -->
+    <color name="search_result_background">#FFEEEEEE</color>
+    <color name="search_result_text">#FF000000</color>
+    <color name="search_result_subtext">#FF555555</color>
+    <color name="search_icon">#FF000000</color>
+    <color name="error_text">#FFD32F2F</color>
+    
+    <!-- Карта и маршруты -->
+    <color name="map_background">#FFF5F5F5</color>
+    <color name="route_line">#FF000000</color>
+    <color name="route_start">#FF4CAF50</color>
+    <color name="route_end">#FFF44336</color>
+    <color name="route_waypoint">#FF2196F3</color>
+    <color name="selected_route_background">#FFEEEEEE</color>
+    <color name="unselected_route_background">#FFF5F5F5</color>
+    <color name="route_icon_background">#FFEEEEEE</color>
+    
+    <!-- Уведомления и сообщения -->
+    <color name="notification_background">#FFF5F5F5</color>
+    <color name="notification_text">#FF000000</color>
+    <color name="success_message">#FF4CAF50</color>
+    <color name="warning_message">#FFFFEB3B</color>
+    <color name="error_message">#FFF44336</color>
+    
+    <!-- Устаревшие цвета (для совместимости) -->
+    <color name="purple_200">#FF000000</color>
+    <color name="purple_500">#FF000000</color>
+    <color name="purple_700">#FF000000</color>
+    <color name="teal_200">#FF000000</color>
+    <color name="teal_700">#FF000000</color>
 </resources> 

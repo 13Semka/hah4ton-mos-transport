@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?android:colorBackground">
 
     <!-- OSM карта занимает верхнюю часть экрана -->
     <org.osmdroid.views.MapView
@@ -18,7 +19,7 @@
         android:id="@+id/bottomPanel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/white"
+        android:background="?android:colorBackground"
         android:elevation="8dp"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -30,19 +31,25 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:hint="Откуда"
+            android:textColorHint="?android:textColorSecondary"
+            app:boxStrokeColor="?android:textColorPrimary"
             app:endIconMode="clear_text"
+            app:endIconTint="?android:textColorPrimary"
+            app:hintTextColor="?android:textColorPrimary"
             app:layout_constraintEnd_toStartOf="@id/getCurrentLocationButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.8"
-            app:startIconDrawable="@drawable/ic_location">
+            app:startIconDrawable="@drawable/ic_location"
+            app:startIconTint="?android:textColorPrimary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/fromAddressEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:imeOptions="actionNext"
-                android:inputType="text" />
+                android:inputType="text"
+                android:textColor="?android:textColorPrimary" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <ImageButton
@@ -52,6 +59,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Мое местоположение"
             android:src="@drawable/ic_my_location"
+            android:tint="?android:textColorPrimary"
             app:layout_constraintBottom_toBottomOf="@id/fromInputLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/fromInputLayout" />
@@ -63,18 +71,24 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:hint="Куда"
+            android:textColorHint="?android:textColorSecondary"
+            app:boxStrokeColor="?android:textColorPrimary"
             app:endIconMode="clear_text"
+            app:endIconTint="?android:textColorPrimary"
+            app:hintTextColor="?android:textColorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/fromInputLayout"
-            app:startIconDrawable="@drawable/ic_destination">
+            app:startIconDrawable="@drawable/ic_destination"
+            app:startIconTint="?android:textColorPrimary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/toAddressEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:imeOptions="actionDone"
-                android:inputType="text" />
+                android:inputType="text"
+                android:textColor="?android:textColorPrimary" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -82,6 +96,7 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:visibility="gone"
+            android:background="?attr/colorSurface"
             app:layout_constraintBottom_toTopOf="@id/searchButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -93,6 +108,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Найти маршруты"
+            android:textColor="?attr/colorOnPrimary"
+            android:backgroundTint="?attr/colorPrimary"
             app:layout_constraintBottom_toTopOf="@id/resultText"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -104,6 +121,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Найдено маршрутов: 0"
+            android:textColor="?android:textColorPrimary"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -115,6 +133,7 @@
             android:layout_height="0dp"
             android:layout_marginTop="4dp"
             android:visibility="gone"
+            android:background="?attr/colorSurface"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -125,6 +144,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
+            android:indeterminateTint="?android:textColorPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

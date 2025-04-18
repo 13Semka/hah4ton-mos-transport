@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,31 +22,76 @@
             android:text="Маршрут 1"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/purple_700" />
+            android:textColor="?android:textColorPrimary" />
 
-        <TextView
-            android:id="@+id/transportTypeTextView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Транспорт: Автобус"
-            android:textSize="16sp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+            
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_transport"
+                android:tint="?android:textColorPrimary"
+                android:layout_gravity="center_vertical"/>
+                
+            <TextView
+                android:id="@+id/transportTypeTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Транспорт: Автобус"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="16sp" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/durationTextView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Время в пути: 1 ч 20 мин"
-            android:textSize="16sp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+            
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_time"
+                android:tint="?android:textColorPrimary"
+                android:layout_gravity="center_vertical"/>
+                
+            <TextView
+                android:id="@+id/durationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Время в пути: 1 ч 20 мин"
+                android:textColor="?android:textColorPrimary"
+                android:textSize="16sp" />
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/priceTextView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Стоимость: 150 руб."
-            android:textSize="16sp" />
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp">
+            
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_price"
+                android:tint="?android:textColorPrimary"
+                android:layout_gravity="center_vertical"/>
+                
+            <TextView
+                android:id="@+id/priceTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Стоимость: 150 руб."
+                android:textColor="?android:textColorPrimary"
+                android:textSize="16sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/descriptionTextView"
@@ -54,7 +100,8 @@
             android:layout_marginTop="8dp"
             android:text="Описание маршрута"
             android:textSize="14sp"
-            android:textStyle="italic" />
+            android:textStyle="italic"
+            android:textColor="?android:textColorSecondary" />
 
     </LinearLayout>
 
