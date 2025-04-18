@@ -1,6 +1,8 @@
 package com.example.transportsirius.data.di
 
+import com.example.transportsirius.data.repository.GeocoderRepositoryImpl
 import com.example.transportsirius.data.repository.RouteRepositoryImpl
+import com.example.transportsirius.domain.repository.GeocoderRepository
 import com.example.transportsirius.domain.repository.RouteRepository
 import dagger.Binds
 import dagger.Module
@@ -17,4 +19,10 @@ abstract class RepositoryModule {
     abstract fun bindRouteRepository(
         repositoryImpl: RouteRepositoryImpl
     ): RouteRepository
+    
+    @Binds
+    @Singleton
+    abstract fun bindGeocoderRepository(
+        impl: GeocoderRepositoryImpl
+    ): GeocoderRepository
 } 

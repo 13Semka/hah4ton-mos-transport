@@ -1,6 +1,8 @@
 package com.example.transportsirius.data.di
 
+import com.example.transportsirius.data.api.GeocoderApi
 import com.example.transportsirius.data.api.RouteApi
+import com.example.transportsirius.data.mapper.GeocoderMapper
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,6 +12,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -17,6 +20,7 @@ import javax.inject.Singleton
 object NetworkModule {
     
     private const val BASE_URL = "https://api.transport-sirius.com/api/v1/"
+    private const val DGIS_BASE_URL = "https://catalog.api.2gis.com/3.0/"
     
     @Provides
     @Singleton
@@ -39,6 +43,7 @@ object NetworkModule {
     
     @Provides
     @Singleton
+    @Named("mainApi")
     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -49,7 +54,30 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideRouteApi(retrofit: Retrofit): RouteApi {
+    @Named("dgisApi")
+    fun provideDgisRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(DGIS_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    
+    @Provides
+    @Singleton
+    fun provideRouteApi(@Named("mainApi") retrofit: Retrofit): RouteApi {
         return retrofit.create(RouteApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideGeocoderApi(@Named("dgisApi") retrofit: Retrofit): GeocoderApi {
+        return retrofit.create(GeocoderApi::class.java)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideGeocoderMapper(): GeocoderMapper {
+        return GeocoderMapper()
     }
 } 

@@ -23,7 +23,7 @@ class RouteMapper @Inject constructor() {
             points = dto.points.map { mapLatLngToDomain(it) }
         )
     }
-    
+
     fun mapLatLngToDomain(dto: LatLngDto): LatLng {
         return LatLng(
             latitude = dto.latitude,
