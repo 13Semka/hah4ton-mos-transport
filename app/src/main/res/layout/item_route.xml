@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/routeCardView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="8dp"
+    android:layout_margin="8dp"
     app:cardCornerRadius="8dp"
     app:cardElevation="4dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="16dp">
 
         <TextView
@@ -19,49 +21,41 @@
             android:text="Маршрут 1"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textColor="@color/purple_700" />
 
         <TextView
             android:id="@+id/transportTypeTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="Транспорт: Автобус"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/routeNameTextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/durationTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Время в пути: 8 часов"
             android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/transportTypeTextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:text="Время в пути: 1 ч 20 мин"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/priceTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Стоимость: 1500 руб."
             android:layout_marginTop="4dp"
-            app:layout_constraintTop_toBottomOf="@id/durationTextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:text="Стоимость: 150 руб."
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/descriptionTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Описание маршрута"
             android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/priceTextView"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:text="Описание маршрута"
+            android:textSize="14sp"
+            android:textStyle="italic" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
 </androidx.cardview.widget.CardView> 

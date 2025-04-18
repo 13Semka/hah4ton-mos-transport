@@ -46,6 +46,7 @@ dependencies {
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.cardview:cardview:1.0.0")
+    implementation("androidx.preference:preference-ktx:1.2.1")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -73,6 +74,11 @@ dependencies {
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
+
+    // OSMDroid - OpenStreetMap
+    implementation("org.osmdroid:osmdroid-android:6.1.17")
+    implementation("org.osmdroid:osmdroid-mapsforge:6.1.17")
+    implementation("com.google.android.gms:play-services-location:21.1.0") // Оставляем для определения местоположения
 
     // Testing
     testImplementation("junit:junit:4.13.2")

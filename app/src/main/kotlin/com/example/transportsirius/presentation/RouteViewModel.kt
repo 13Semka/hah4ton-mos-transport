@@ -109,6 +109,22 @@ class RouteViewModel @Inject constructor(
         _searchResults.value = emptyList()
     }
 
+    // Установка адреса отправления
+    fun setFromAddress(result: GeocoderResult) {
+        Log.d(TAG, "Setting from address: ${result.name}, location: ${result.latLng}")
+        _fromLocation.value = result.latLng
+        _fromAddress.value = result.formattedAddress
+        _searchResults.value = emptyList()
+    }
+    
+    // Установка адреса назначения
+    fun setToAddress(result: GeocoderResult) {
+        Log.d(TAG, "Setting to address: ${result.name}, location: ${result.latLng}")
+        _toLocation.value = result.latLng
+        _toAddress.value = result.formattedAddress
+        _searchResults.value = emptyList()
+    }
+
     fun loadRoutes() {
         val from = fromLocation.value
         val to = toLocation.value
