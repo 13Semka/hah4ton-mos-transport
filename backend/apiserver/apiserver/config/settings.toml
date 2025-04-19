@@ -5,6 +5,8 @@ environment = "development"
 debug = true
 api_v1_str = "/api/v1"
 project_name = "API Server"
+station_workload_url = ""
+transport_search_radius = 500
 
 # Настройки для разработки
 [development]

@@ -76,6 +76,8 @@ async def create_routes_by_coordinates(request: RouteByCoordinatesRequest):
 
     # Возвращаем найденные маршруты
     logger.info(f"Всего построено {len(all_routes)} маршрутов")
+    if len(all_routes) == 0:
+        return []
 
     transport_workload_service = TransportWorkloadService()
     all_routes = transport_workload_service.set_routes_workload(all_routes)

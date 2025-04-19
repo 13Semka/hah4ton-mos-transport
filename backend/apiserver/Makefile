@@ -47,11 +47,6 @@ lint:
 	$(POETRY) run black .
 	$(POETRY) run isort .
 
-# Сборка и запуск в Docker контейнере
-docker:
-	docker build -t $(APP_NAME) .
-	docker run -p 8000:8000 --env-file .env $(APP_NAME)
-
 # Format code
 format:
 	$(POETRY) run black .
