@@ -1,22 +1,29 @@
 # Общие настройки для всех окружений
 [default]
-# Используем для всех настроек нижний регистр, Dynaconf позволяет получать их в любом стиле
-environment = "development"
-debug = true
-api_v1_str = "/api/v1"
-project_name = "API Server"
-station_workload_url = ""
-transport_search_radius = 500
+environment = "development"      # Окружение приложения (development, testing, production)
+debug = true                     # Режим отладки
+api_v1_str = "/api/v1"           # Префикс для API v1
+project_name = "API Server"      # Название проекта
+version = "0.1.0"                # Версия приложения
 
-# Настройки для разработки
+# Настройки для внешних API
+station_workload_url = ""        # URL API для получения загруженности остановок (если пустое, будет использоваться случайное значение)
+two_gis_base_url = "https://catalog.api.2gis.com/3.0/items"  # Базовый URL для 2GIS API
+
+# Параметры для построения маршрутов
+transport_search_radius = 500    # Радиус поиска транспорта (метры)
+max_stop_count = 5               # Максимальное количество остановок для поиска
+
+# Настройки журналирования
+log_level = "DEBUG"               # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+log_rotation = "1 day"           # Период ротации файлов журнала
+log_retention = "7 days"         # Период хранения файлов журнала
+log_format = "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}"
+
 [development]
 debug = true
 
-# Настройки для тестирования
-[testing]
-debug = true
-
-# Настройки для продакшена
 [production]
 debug = false
-station_workload_url = "http://station-workload:8080"
+station_workload_url = "http://localhost:8080"
+log_level = "WARNING"  # В продакшене повышаем уровень логирования

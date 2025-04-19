@@ -11,10 +11,6 @@ APP_PATH := apiserver.main:app
 install-poetry:
 	curl -sSL https://install.python-poetry.org | python3 -
 
-# Install dependencies
-install:
-	$(POETRY) install
-
 # Run application in development mode
 run:
 	$(UVICORN) $(APP_PATH) --reload --host 0.0.0.0 --port 8000
@@ -52,10 +48,6 @@ format:
 	$(POETRY) run black .
 	$(POETRY) run isort .
 
-# Update dependencies
-update:
-	$(POETRY) update
-
 # Create new virtual environment
 venv:
 	$(POETRY) env remove --all
@@ -65,7 +57,6 @@ venv:
 help:
 	@echo "Available commands:"
 	@echo "  make install-poetry - Install Poetry package manager"
-	@echo "  make install     - Install dependencies"
 	@echo "  make run        - Run application in development mode"
 	@echo "  make run-prod   - Run application in production mode"
 	@echo "  make clean      - Clean cache and temporary files"

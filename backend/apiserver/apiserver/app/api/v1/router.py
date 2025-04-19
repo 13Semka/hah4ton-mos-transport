@@ -3,11 +3,10 @@
 """
 from fastapi import APIRouter
 
-# Импортируем роутеры из endpoints
-from .endpoints.routes.routes import router as routes_router
+from apiserver.config.settings import settings
 
-# Создаем основной роутер
-api_router = APIRouter()
+from .endpoints.router import endpoints_router
 
-# Включаем все подроутеры
-api_router.include_router(routes_router, prefix="/routes", tags=["routes"]) 
+api_router = APIRouter(prefix=settings.API_V1_STR)
+
+api_router.include_router(endpoints_router)
