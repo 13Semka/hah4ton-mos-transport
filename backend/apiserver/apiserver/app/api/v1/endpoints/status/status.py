@@ -9,30 +9,16 @@ import psutil
 import time
 from loguru import logger
 from datetime import datetime
+
 from apiserver.config.settings import settings
+from apiserver.app.api.v1.schemas.status import RootResponse, HealthResponse, StatusResponse
+
 
 router = APIRouter()
 
 # Время запуска приложения
 START_TIME = time.time()
 
-class HealthResponse(BaseModel):
-    status: str
-    timestamp: str
-
-class StatusResponse(BaseModel):
-    status: str
-    version: str
-    environment: str
-    uptime: float
-    system_info: Dict[str, Any]
-    memory_usage: Dict[str, Any]
-    cpu_usage: float
-
-class RootResponse(BaseModel):
-    message: str
-    docs_url: str
-    redoc_url: str
 
 @router.get("/", response_model=RootResponse)
 async def root():

@@ -1,6 +1,110 @@
 # API Server
 
-Современный API сервер на FastAPI с интеграцией внешних сервисов (2GIS) и использованием Poetry для управления зависимостями.
+API сервер на FastAPI с интеграцией 2GIS для построения маршрутов.
+
+## Настройка окружения
+
+### Установка зависимостей
+
+```bash
+# Установка Poetry (если не установлен)
+make install-poetry
+
+# Установка зависимостей проекта
+make install
+```
+
+### Настройка конфигурации
+
+Приложение использует [Dynaconf](https://www.dynaconf.com/) для конфигурации. 
+
+1. Скопируйте файл с шаблоном секретных настроек:
+
+```bash
+cp apiserver/config/.secrets.toml.example apiserver/config/.secrets.toml
+```
+
+2. Отредактируйте файл `.secrets.toml` и укажите в нем свои секретные данные:
+   - API ключ для 2GIS
+   - Данные для подключения к базе данных (при необходимости)
+   - Секретный ключ для JWT токенов (при необходимости)
+
+#### Пример конфигурации
+
+**settings.toml** (общие настройки):
+```toml
+[default]
+environment = "development"
+debug = true
+api_v1_str = "/api/v1"
+project_name = "API Server"
+two_gis_api_url = "https://2gis.ru/api/v1"
+
+[development]
+debug = true
+
+[production]
+debug = false
+```
+
+**.secrets.toml** (секретные настройки):
+```toml
+[default]
+two_gis_api_key = "your_api_key_here"
+secret_key = "your_super_secret_key_here"
+
+[development]
+two_gis_api_key = "development_key"
+
+[production]
+# В продакшене можно использовать переменные окружения
+two_gis_api_key = "@format {env[TWO_GIS_API_KEY]}"
+```
+
+#### Переключение окружений
+
+Вы можете переключаться между окружениями (development, testing, production) с помощью переменной окружения:
+
+```bash
+# Для разработки
+export API_ENV=development
+
+# Для продакшена
+export API_ENV=production
+```
+
+## Запуск приложения
+
+### Режим разработки
+
+```bash
+make run
+```
+
+### Режим продакшена
+
+```bash
+make run-prod
+```
+
+## API Эндпоинты
+
+### Статус сервера
+
+- `GET /api/v1/` - Корневой эндпоинт с информацией о сервисе
+- `GET /api/v1/health` - Проверка работоспособности сервера
+- `GET /api/v1/status` - Подробная информация о состоянии сервера
+
+### Маршруты
+
+- `POST /api/v1/routes/route` - Получение маршрута между двумя точками
+- `GET /api/v1/routes/route/estimate` - Быстрая оценка маршрута (расстояние и время)
+
+## Документация API
+
+После запуска приложения документация доступна по адресу:
+- Swagger UI: `http://localhost:8000/api/v1/docs`
+- ReDoc: `http://localhost:8000/api/v1/redoc`
 
 ## Структура проекта
 

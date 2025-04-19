@@ -8,7 +8,7 @@ import sys
 import os
 
 from apiserver.config.settings import settings
-from apiserver.app.api.v1.router import api_router
+from apiserver.app.api.v1.endpoints.router import api_router
 
 # Настройка логирования
 logger.remove()  # Удаляем стандартный обработчик
