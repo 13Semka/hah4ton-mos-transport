@@ -1,0 +1,3263 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "2GIS Navigation API",
+    "version": "6.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://routing.api.2gis.com/"
+    },
+    {
+      "url": "https://routing.api.2gis.com/"
+    }
+  ],
+  "paths": {
+    "/public_transport/2.0": {
+      "post": {
+        "summary": "Построение маршрута проезда на общественном транспорте",
+        "description": "Построение маршрута проезда на общественном транспорте",
+        "parameters": [
+          {
+            "description": "API-ключ разработчика",
+            "required": true,
+            "deprecated": false,
+            "explode": false,
+            "schema": {
+              "type": "string"
+            },
+            "name": "key",
+            "in": "query",
+            "allowEmptyValue": false,
+            "allowReserved": false
+          }
+        ],
+        "requestBody": {
+          "description": "Параметры запроса",
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicTransportRequestModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Набор маршрутов",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTransportResponseModel"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Маршрут не может быть построен",
+            "content": {}
+          },
+          "422": {
+            "description": "Некорректное содержимое запроса",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicTransportFailResponseModel"
+                }
+              }
+            }
+          }
+        },
+        "deprecated": false
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Alternative": {
+        "properties": {
+          "geometry": {
+            "items": {
+              "$ref": "#/components/schemas/Geometry"
+            },
+            "type": "array"
+          },
+          "platforms": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SubPlatform"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "entrances": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Entrance"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "geometry"
+        ],
+        "description": "Описывает альтернативу перемещения."
+      },
+      "CTXTransportType": {
+        "type": "string",
+        "enum": [
+          "pedestrian",
+          "metro",
+          "light_metro",
+          "suburban_train",
+          "aeroexpress",
+          "tram",
+          "bus",
+          "trolleybus",
+          "shuttle_bus",
+          "monorail",
+          "funicular_railway",
+          "river_transport",
+          "cable_car",
+          "light_rail",
+          "premetro",
+          "mcc",
+          "mcd"
+        ],
+        "description": "Виды общественного транспорта, которые могут быть использованы при построении маршрута: <ul type=\"disk\"> <li>pedestrian - пеший, </li><li>metro - метро, </li><li>light_metro - легкое метро, </li><li>suburban_train - пригородный поезд, </li><li>aeroexpress - аэроэкспресс, </li><li>tram - трамвай, </li><li>bus - автобус, </li><li>trolleybus - троллейбус, </li><li>shuttle_bus - маршрутное такси, </li><li>monorail - монорельс, </li><li>funicular_railway - фуникулёр, </li><li>river_transport - речной транспорт, </li><li>cable_car - канатная дорога, </li><li>light_rail - легкорельсовый транспорт, </li><li>premetro - подземный трамвай, </li><li>mcc - Московское центральное кольцо, </li><li>mcd - Московские центральные диаметры, </li></ul>"
+      },
+      "Entrance": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Название станции"
+          },
+          "geometry": {
+            "type": "string",
+            "description": "Координаты входа в метро в формате WKT (POINT)"
+          },
+          "color": {
+            "type": "string",
+            "description": "Цвет иконки"
+          },
+          "metro_logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Логотип ветки метро для выхода (если он есть)"
+          },
+          "show_other_station": {
+            "type": "boolean",
+            "description": "Если true, выход находится на другой ветке"
+          },
+          "line_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Название ветки метро"
+          },
+          "exit": {
+            "type": "boolean",
+            "description": "Если true, через данный вход можно выйти наружу"
+          },
+          "exit_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Комментарий к выходу из метро"
+          },
+          "number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Номер выхода из метро"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "geometry",
+          "color",
+          "show_other_station",
+          "exit"
+        ],
+        "description": "Информация о входах в метро."
+      },
+      "Geometry": {
+        "properties": {
+          "selection": {
+            "type": "string",
+            "description": "Геометрия участка маршрута в формате WKT"
+          },
+          "z_first": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Z-уровень начальной точки участка маршрута"
+          },
+          "z_last": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Z-уровень конечной точки участка маршрута"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "selection"
+        ],
+        "description": "Геометрия участка маршрута."
+      },
+      "Locale": {
+        "type": "string",
+        "enum": [
+          "en",
+          "ru",
+          "uk",
+          "es",
+          "it",
+          "cs",
+          "ar",
+          "az",
+          "uz",
+          "kk",
+          "hy",
+          "ka"
+        ],
+        "description": "Язык локализации строк в ответе: <ul type=\"disk\"> <li>en - Английский, </li><li>ru - Русский, </li><li>uk - Украинский, </li><li>es - Испанский, </li><li>it - Итальянский, </li><li>cs - Чешский, </li><li>ar - Арабский, </li><li>az - Азербайджанский, </li><li>uz - Узбекский, </li><li>kk - Казахский, </li><li>hy - Армянский, </li><li>ka - Грузинский, </li></ul>"
+      },
+      "Metro": {
+        "properties": {
+          "ui_station_count": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Количество остановок"
+          },
+          "boarding_parts_suggest": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Номера частей состава, в которые рекомендуется посадка (максимум 3 номера). Части нумеруются слева направо. Поле используется для городов с небольшим метро"
+          },
+          "boarding_parts_suggest_5_wagons": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "integer"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Номера частей состава, в которые рекомендуется посадка (максимум 5 номеров). Части нумеруются слева направо. Поле используется вместо boarding_parts_suggest для городов с большим метро"
+          },
+          "ui_direction_suggest": {
+            "type": "string",
+            "description": "Подсказка направления движения"
+          },
+          "line_name": {
+            "type": "string",
+            "description": "Название линии метро"
+          },
+          "color": {
+            "type": "string",
+            "description": "Цвет линии метро"
+          },
+          "exit_comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Комментарий к выходу из метро"
+          },
+          "exit_entrance_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Номер выхода из метро"
+          },
+          "schedules": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ScheduleItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedules_events": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ScheduleEventsItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "ui_direction_suggest",
+          "line_name",
+          "color"
+        ],
+        "description": "Информация о перемещении с использованием метро."
+      },
+      "Movement": {
+        "properties": {
+          "alternatives": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Alternative"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "distance": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Расстояние перемещения в метрах."
+          },
+          "id": {
+            "type": "string",
+            "description": "Идентификатор перемещения"
+          },
+          "platforms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlatformsInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "$ref": "#/components/schemas/MovementType"
+          },
+          "waypoint": {
+            "$ref": "#/components/schemas/MovementWaypoint"
+          },
+          "routes": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Route"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "metro": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Metro"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "moving_duration": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Время движения в секундах"
+          },
+          "waiting_duration": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Время ожидания в секундах. Для пеших перемещений равно 0, т.е. если type!=passage"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "distance",
+          "id",
+          "type",
+          "waypoint"
+        ],
+        "description": "Описывает место, из которого (в которое) необходимо уехать (приехать)."
+      },
+      "MovementType": {
+        "type": "string",
+        "enum": [
+          "walkway",
+          "passage",
+          "crossing"
+        ],
+        "description": "Тип перемещения.: <ul type=\"disk\"> <li>walkway - перемещение от начальной точки до остановки транспорта или от остановки до точки назначения, </li><li>passage - проезд на транспорте, </li><li>crossing - переход на другую платформу, </li></ul>"
+      },
+      "MovementWaypoint": {
+        "properties": {
+          "combined": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Если true, то участок маршрута можно проехать на разных видах транспорта"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Координаты или название начальной точки перемещения"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Дополнительная информация (например, продолжительность пешеходного участка маршрута)"
+          },
+          "subtype": {
+            "$ref": "#/components/schemas/WaypointSubType"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "comment",
+          "subtype"
+        ],
+        "description": "Краткая информация о перемещении."
+      },
+      "PairsRequestPointType": {
+        "type": "string",
+        "enum": [
+          "stop",
+          "walking"
+        ],
+        "description": "Тип точки: <ul type=\"disk\"> <li>stop - начальная/конечная точка маршрута (прямой путь до дороги), </li><li>walking - начальная/конечная точка маршрута (пешеходный путь до дороги), </li></ul>"
+      },
+      "PlatformsInfo": {
+        "properties": {
+          "names": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Названия промежуточных остановок"
+          },
+          "penultimate_stop": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Название остановки, после которой нужно выйти"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "description": "Список промежуточных остановок маршрута."
+      },
+      "Point": {
+        "properties": {
+          "lat": {
+            "type": "number",
+            "format": "double",
+            "description": "Градусы северной широты"
+          },
+          "lon": {
+            "type": "number",
+            "format": "double",
+            "description": "Градусы восточной долготы"
+          },
+          "type": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PairsRequestPointType"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "azimuth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Произвольное текстовое обозначение"
+          },
+          "distance_direction": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Расстояние в метрах от начальной точки, на котором должно быть сохранено направление движения"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "lat",
+          "lon"
+        ],
+        "description": "Точка в WGS84.",
+        "example": {
+          "azimuth": 120,
+          "distance_direction": 10,
+          "lat": 51.734588,
+          "lon": 36.149328,
+          "type": "stop"
+        }
+      },
+      "PublicTransportFailResponseModel": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ResponseType"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Детальное сообщение об ошибке."
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Код ответа."
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type"
+        ],
+        "description": "Ответ для невалидного запроса."
+      },
+      "PublicTransportRequestModel": {
+        "properties": {
+          "enable_schedule": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Если true, ответ будет содержать расписание для используемого транспорта."
+          },
+          "locale": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Locale"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Дата и время начала движения. Указывается как <a href='https://ru.wikipedia.org/wiki/Unix-время' target='_blank'>Unix-время</a>. Если параметр не указан, используется текущее время."
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceTargetObj"
+          },
+          "target": {
+            "$ref": "#/components/schemas/SourceTargetObj"
+          },
+          "intermediate_points": {
+            "items": {
+              "$ref": "#/components/schemas/SourceTargetObj"
+            },
+            "type": "array",
+            "description": "Промежуточные точки в маршруте (максимальное значение: 10)"
+          },
+          "transport": {
+            "items": {
+              "$ref": "#/components/schemas/CTXTransportType"
+            },
+            "type": "array"
+          },
+          "max_result_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Максимальное количество вариантов маршрута в ответе"
+          },
+          "direct_routes_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Максимальное количество прямых маршрутов в ответе"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "source",
+          "target",
+          "transport"
+        ],
+        "description": "Запрос PublicTransportAPI.",
+        "example": {
+          "locale": "ru",
+          "source": {
+            "name": "Point A",
+            "point": {
+              "lat": 51.734588,
+              "lon": 36.149328
+            }
+          },
+          "target": {
+            "name": "Point B",
+            "point": {
+              "lat": 51.734183,
+              "lon": 36.176865
+            }
+          },
+          "transport": [
+            "bus",
+            "tram"
+          ]
+        }
+      },
+      "PublicTransportResponseItem": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Идентификатор варианта проезда по маршруту"
+          },
+          "crossing_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Количество пересадок, для которых нужно перейти на другую платформу"
+          },
+          "route_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Идентификатор маршрута"
+          },
+          "movements": {
+            "items": {
+              "$ref": "#/components/schemas/Movement"
+            },
+            "type": "array"
+          },
+          "pedestrian": {
+            "type": "boolean",
+            "description": "Если true, маршрут полностью пешеходный"
+          },
+          "transfer_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Количество пересадок в рамках одной платформы"
+          },
+          "total_distance": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Расстояние в пути в метрах"
+          },
+          "total_duration": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Время в пути в секундах"
+          },
+          "total_walkway_distance": {
+            "type": "string",
+            "description": "Продолжительность пешеходной части маршрута в виде локализованной строки"
+          },
+          "transport": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CTXTransportType"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "waypoints": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Waypoint"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedules": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ScheduleItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedules_events": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ScheduleEventsItem"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "crossing_count",
+          "movements",
+          "pedestrian",
+          "transfer_count",
+          "total_distance",
+          "total_duration",
+          "total_walkway_distance"
+        ],
+        "description": "Описывает один из вариантов маршрута."
+      },
+      "PublicTransportResponseModel": {
+        "items": {
+          "$ref": "#/components/schemas/PublicTransportResponseItem"
+        },
+        "type": "array",
+        "description": "Результаты ответа PublicTransport.",
+        "example": [
+          [
+            {
+              "crossing_count": 0,
+              "id": "1",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "entrances": [
+                        {
+                          "color": "#e90101",
+                          "exit": false,
+                          "exit_comment": "на улицу Ватутина, ГУМ \"Россия\"",
+                          "geometry": "POINT(82.896779 54.982477)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Маркса",
+                          "number": "6",
+                          "show_other_station": false
+                        }
+                      ],
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898527 54.980023, 82.899123 54.980377, 82.899325 54.980497, 82.899528 54.980618, 82.899670 54.980702, 82.898976 54.981091, 82.898949 54.981106, 82.898747 54.981175, 82.898552 54.981088, 82.898358 54.981194, 82.898335 54.981197, 82.898314 54.981192, 82.898387 54.981235, 82.898326 54.981347, 82.898245 54.981498, 82.897915 54.981683, 82.897804 54.981773, 82.897561 54.981850, 82.897286 54.982004, 82.897263 54.982012, 82.897240 54.982009, 82.897195 54.982083, 82.897130 54.982101, 82.896678 54.982354, 82.896812 54.982432, 82.896756 54.982464, 82.896779 54.982477)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.896779 54.982477, 82.896957 54.982582, 82.896125 54.983050, 82.894457 54.983087, 82.892841 54.983030)",
+                          "z_first": -1,
+                          "z_last": -1
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "2",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 740 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.892842 54.983030, 82.894794 54.983114, 82.896032 54.983149, 82.896176 54.983164, 82.896298 54.983193, 82.896382 54.983230, 82.901923 54.986523, 82.906603 54.989278, 82.906603 54.989278, 82.912290 54.992625, 82.912634 54.992803, 82.915184 54.993963, 82.916344 54.994457, 82.916839 54.994679, 82.917256 54.994904, 82.917674 54.995164, 82.937156 55.008238, 82.937526 55.008486, 82.937526 55.008486, 82.938162 55.008912, 82.938322 55.009044, 82.938426 55.009138, 82.938499 55.009222, 82.938556 55.009320, 82.938581 55.009420, 82.938852 55.010558, 82.938897 55.010668, 82.938972 55.010772, 82.945305 55.015676, 82.945397 55.015786, 82.945458 55.015956, 82.945472 55.016126, 82.945400 55.016266, 82.945150 55.016414, 82.939045 55.018942, 82.939045 55.018942, 82.934806 55.020698, 82.930810 55.023171, 82.929843 55.023664, 82.921681 55.027049, 82.921446 55.027160, 82.921348 55.027222, 82.921290 55.027280, 82.921219 55.027421, 82.920522 55.030023)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.892842 54.983030)",
+                          "id": "5"
+                        },
+                        {
+                          "geometry": "POINT(82.906603 54.989278)",
+                          "id": "6"
+                        },
+                        {
+                          "geometry": "POINT(82.937526 55.008486)",
+                          "id": "7"
+                        },
+                        {
+                          "geometry": "POINT(82.939045 55.018942)",
+                          "id": "8"
+                        },
+                        {
+                          "geometry": "POINT(82.920522 55.030023)",
+                          "id": "9"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "3",
+                  "metro": {
+                    "boarding_parts_suggest": [
+                      1
+                    ],
+                    "color": "#e90101",
+                    "exit_comment": "четная сторона ул. Красный проспект, улицу Орджоникидзе. В сторону Новосибирского Государственного Академического Театра Оперы и Балета, НГАХА",
+                    "exit_entrance_number": "2",
+                    "line_name": "Ленинская линия",
+                    "ui_direction_suggest": "в сторону станции «Заельцовская»",
+                    "ui_station_count": "4 станции"
+                  },
+                  "platforms": {
+                    "names": [
+                      "Студенческая",
+                      "Речной вокзал",
+                      "Октябрьская"
+                    ],
+                    "penultimate_stop": "Октябрьская"
+                  },
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Площадь Маркса",
+                    "subtype": "metro"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "entrances": [
+                        {
+                          "color": "#e90101",
+                          "exit": true,
+                          "exit_comment": "четная сторона ул. Красный проспект, улицу Орджоникидзе. В сторону Новосибирского Государственного Академического Театра Оперы и Балета, НГАХА",
+                          "geometry": "POINT(82.920865 55.030857)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "2",
+                          "show_other_station": false
+                        }
+                      ],
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.920522 55.030023, 82.920330 55.030738, 82.920778 55.030848, 82.920865 55.030856, 82.920965 55.030864)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.920965 55.030864, 82.920942 55.030954, 82.920924 55.031019, 82.921193 55.031044, 82.922723 55.031183, 82.923257 55.031232, 82.923496 55.031254, 82.923802 55.031282, 82.923962 55.031296, 82.924092 55.031307, 82.924171 55.031313, 82.924296 55.031307, 82.924386 55.031300, 82.924505 55.031288, 82.924602 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925175 55.031323, 82.925440 55.031347, 82.925549 55.031366, 82.925751 55.031408, 82.925856 55.031380, 82.925954 55.031341, 82.926025 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926695 55.030933, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "15",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 550 м",
+                    "name": "Площадь Ленина",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "16",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 17:53.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002491.56445",
+              "schedules": [
+                {
+                  "period": 5,
+                  "precise_time": "",
+                  "start_time": 63727,
+                  "start_time_utc": 1632134527,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 1528,
+              "total_walkway_distance": "пешком 15 мин",
+              "transfer_count": 0,
+              "transport": [
+                "pedestrian",
+                "bus",
+                "trolleybus",
+                "tram",
+                "shuttle_bus",
+                "metro",
+                "suburban_train",
+                "funicular_railway",
+                "monorail",
+                "river_transport",
+                "cable_car",
+                "light_rail",
+                "premetro",
+                "light_metro",
+                "aeroexpress",
+                "mcd",
+                "mcc",
+                "unknown"
+              ],
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "Ленинская линия"
+                  ],
+                  "subtype": "metro"
+                }
+              ]
+            },
+            {
+              "crossing_count": 1,
+              "id": "17",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898202 54.979829, 82.897541 54.979437, 82.897479 54.979461, 82.897387 54.979482, 82.897279 54.979410, 82.897223 54.979374, 82.897217 54.979376, 82.897201 54.979383, 82.897184 54.979389, 82.897166 54.979393, 82.897152 54.979395, 82.897146 54.979396, 82.897127 54.979398, 82.897108 54.979398, 82.897088 54.979398, 82.897068 54.979396, 82.897058 54.979394, 82.897049 54.979393, 82.897030 54.979389, 82.897013 54.979383, 82.896997 54.979376, 82.896983 54.979369, 82.896969 54.979360, 82.896958 54.979351, 82.896952 54.979345, 82.896954 54.979328, 82.896759 54.979319, 82.896759 54.979317, 82.896525 54.979306, 82.896525 54.979307, 82.896447 54.979304, 82.896415 54.979302, 82.896203 54.979424, 82.896045 54.979515, 82.895982 54.979471, 82.895733 54.979545, 82.895635 54.979478, 82.895632 54.979476)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "18",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 230 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.895632 54.979476, 82.891776 54.981358, 82.891776 54.981358, 82.890367 54.982046, 82.890367 54.982046, 82.889969 54.982240, 82.889844 54.982310, 82.889791 54.982353, 82.889729 54.982416, 82.889709 54.982475, 82.889707 54.982545, 82.889714 54.982595, 82.889730 54.982641, 82.889750 54.982670, 82.889750 54.982670, 82.889772 54.982686, 82.889789 54.982698, 82.889805 54.982711, 82.889812 54.982717, 82.889812 54.982717, 82.889836 54.982727, 82.889958 54.982770, 82.890073 54.982807, 82.890130 54.982826, 82.890246 54.982849, 82.890359 54.982857, 82.893255 54.982963, 82.893255 54.982963, 82.894460 54.983008, 82.894674 54.982985, 82.894849 54.982950, 82.894985 54.982904, 82.895245 54.982762, 82.895245 54.982762, 82.895336 54.982704, 82.895435 54.982643, 82.895510 54.982605, 82.895510 54.982605, 82.895703 54.982560, 82.895806 54.982541, 82.895889 54.982527, 82.895978 54.982516, 82.896055 54.982511, 82.896143 54.982511, 82.896223 54.982515, 82.896298 54.982525, 82.896370 54.982539, 82.896438 54.982558, 82.896499 54.982582, 82.896534 54.982598, 82.896580 54.982627, 82.896580 54.982627, 82.896608 54.982644, 82.896608 54.982644, 82.896643 54.982678, 82.896672 54.982712, 82.896696 54.982754, 82.896712 54.982797, 82.896719 54.982842, 82.896718 54.982889, 82.896708 54.982936, 82.896623 54.983150, 82.896608 54.983173, 82.896497 54.983234, 82.896497 54.983234, 82.897481 54.983818, 82.897481 54.983818, 82.902008 54.986509, 82.905672 54.988666, 82.905672 54.988666, 82.906032 54.988877, 82.906032 54.988877, 82.906468 54.989134, 82.906468 54.989134, 82.911846 54.992299, 82.911846 54.992299, 82.912281 54.992555, 82.912459 54.992611, 82.912639 54.992652, 82.912764 54.992675, 82.912899 54.992687, 82.913005 54.992661, 82.913005 54.992661, 82.913172 54.992644, 82.913300 54.992647, 82.913495 54.992667, 82.913670 54.992706, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936838 55.008937, 82.938158 55.009921, 82.938158 55.009921, 82.938683 55.010312, 82.938751 55.010350, 82.938990 55.010458, 82.938990 55.010458, 82.939101 55.010505, 82.939190 55.010549, 82.939301 55.010625, 82.939519 55.010799)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.939519 55.010799)",
+                          "id": "21"
+                        },
+                        {
+                          "geometry": "POINT(82.893255 54.982963)",
+                          "id": "22"
+                        },
+                        {
+                          "geometry": "POINT(82.890367 54.982046)",
+                          "id": "23"
+                        },
+                        {
+                          "geometry": "POINT(82.897481 54.983818)",
+                          "id": "24"
+                        },
+                        {
+                          "geometry": "POINT(82.895632 54.979476)",
+                          "id": "25"
+                        },
+                        {
+                          "geometry": "POINT(82.906468 54.989134)",
+                          "id": "26"
+                        },
+                        {
+                          "geometry": "POINT(82.911846 54.992299)",
+                          "id": "27"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "6"
+                          ],
+                          "subtype": "bus"
+                        },
+                        {
+                          "names": [
+                            "8"
+                          ],
+                          "subtype": "trolleybus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "19",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "6"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    },
+                    {
+                      "color": "",
+                      "names": [
+                        "8"
+                      ],
+                      "subtype": "trolleybus",
+                      "subtype_name": "троллейбус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": true,
+                    "comment": "",
+                    "name": "Покрышкина",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.939519 55.010799, 82.939560 55.010781, 82.939487 55.010726, 82.939414 55.010668, 82.939267 55.010554, 82.939288 55.010440, 82.939255 55.010414, 82.939227 55.010425, 82.939154 55.010367, 82.939485 55.010230, 82.939474 55.010218)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "35",
+                  "type": "crossing",
+                  "waypoint": {
+                    "comment": "пешком 75 м",
+                    "name": "Восход",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.939474 55.010218, 82.939032 55.010401, 82.938325 55.010667, 82.932733 55.012983, 82.932733 55.012983, 82.931232 55.013515, 82.931145 55.013557, 82.929858 55.014336, 82.929828 55.014355, 82.929818 55.014369, 82.929815 55.014385, 82.929800 55.014466, 82.929786 55.014495, 82.929742 55.014530, 82.928017 55.015574, 82.928017 55.015574, 82.927955 55.015610, 82.927838 55.015692, 82.927780 55.015737, 82.927725 55.015794, 82.927676 55.015853, 82.927643 55.015908, 82.927625 55.015963, 82.927620 55.016015, 82.927629 55.016078, 82.927649 55.016135, 82.927682 55.016194, 82.927737 55.016275, 82.927768 55.016312, 82.927905 55.016491, 82.927983 55.016610, 82.928015 55.016672, 82.928026 55.016716, 82.928028 55.016775, 82.928004 55.016941, 82.927640 55.018140, 82.927019 55.020575, 82.927019 55.020575, 82.926160 55.023940, 82.925992 55.024677, 82.925992 55.024677, 82.925764 55.025667, 82.924825 55.029215, 82.924809 55.029291, 82.924807 55.029315, 82.924808 55.029335, 82.924813 55.029356, 82.924823 55.029377, 82.924831 55.029393, 82.924843 55.029407, 82.924861 55.029420, 82.924880 55.029431, 82.924907 55.029443, 82.924947 55.029454, 82.924996 55.029463, 82.925041 55.029469, 82.926007 55.029546, 82.926007 55.029546, 82.926349 55.029573, 82.927468 55.029671, 82.927468 55.029671, 82.928286 55.029742, 82.928358 55.029758, 82.928403 55.029784, 82.928426 55.029817, 82.928434 55.029856, 82.928433 55.029892, 82.928289 55.030552, 82.928235 55.030619, 82.928130 55.030673, 82.928023 55.030699, 82.927865 55.030705, 82.927062 55.030666, 82.927062 55.030666, 82.926986 55.030674, 82.926918 55.030690, 82.926864 55.030715, 82.926823 55.030743, 82.926789 55.030799, 82.926756 55.030941, 82.926727 55.031003, 82.926702 55.031025)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.939474 55.010218)",
+                          "id": "38"
+                        },
+                        {
+                          "geometry": "POINT(82.926702 55.031025)",
+                          "id": "39"
+                        },
+                        {
+                          "geometry": "POINT(82.926007 55.029546)",
+                          "id": "40"
+                        },
+                        {
+                          "geometry": "POINT(82.925992 55.024677)",
+                          "id": "41"
+                        },
+                        {
+                          "geometry": "POINT(82.928017 55.015574)",
+                          "id": "42"
+                        },
+                        {
+                          "geometry": "POINT(82.932733 55.012983)",
+                          "id": "43"
+                        },
+                        {
+                          "geometry": "POINT(82.927019 55.020575)",
+                          "id": "44"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "13"
+                          ],
+                          "subtype": "tram"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "36",
+                  "platforms": {
+                    "names": [
+                      "Маковского",
+                      "Мостовая",
+                      "Фабрика ЦК Швейников",
+                      "Октябрьская (ул. Серебренниковская)",
+                      "Депутатская"
+                    ]
+                  },
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "13"
+                      ],
+                      "subtype": "tram",
+                      "subtype_name": "трамвай"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Зыряновская",
+                    "subtype": "tram"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.926702 55.031025, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "52",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 3 м",
+                    "name": "Театр Оперы и балета",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "53",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:02.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002499.82422",
+              "schedules": [
+                {
+                  "period": 6,
+                  "precise_time": "",
+                  "start_time": 63421,
+                  "start_time_utc": 1632134221,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 2025,
+              "total_walkway_distance": "пешком 3 мин",
+              "transfer_count": 1,
+              "waypoints": [
+                {
+                  "combined": true,
+                  "routes_names": [
+                    "6",
+                    "8"
+                  ],
+                  "subtype": "bus"
+                },
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "13"
+                  ],
+                  "subtype": "tram"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "54",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898202 54.979829, 82.897541 54.979437, 82.897479 54.979461, 82.897387 54.979482, 82.897279 54.979410, 82.897223 54.979374, 82.897217 54.979376, 82.897201 54.979383, 82.897184 54.979389, 82.897166 54.979393, 82.897152 54.979395, 82.897146 54.979396, 82.897127 54.979398, 82.897108 54.979398, 82.897088 54.979398, 82.897068 54.979396, 82.897058 54.979394, 82.897049 54.979393, 82.897030 54.979389, 82.897013 54.979383, 82.896997 54.979376, 82.896983 54.979369, 82.896969 54.979360, 82.896958 54.979351, 82.896952 54.979345, 82.896954 54.979328, 82.896759 54.979319, 82.896759 54.979317, 82.896525 54.979306, 82.896525 54.979307, 82.896447 54.979304, 82.896415 54.979302, 82.896203 54.979424, 82.896045 54.979515, 82.895982 54.979471, 82.895733 54.979545, 82.895635 54.979478, 82.895632 54.979476)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "55",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 230 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.895632 54.979476, 82.891776 54.981358, 82.891776 54.981358, 82.890367 54.982046, 82.890367 54.982046, 82.889969 54.982240, 82.889844 54.982310, 82.889791 54.982353, 82.889729 54.982416, 82.889709 54.982475, 82.889707 54.982545, 82.889714 54.982595, 82.889730 54.982641, 82.889750 54.982670, 82.889750 54.982670, 82.889772 54.982686, 82.889789 54.982698, 82.889805 54.982711, 82.889812 54.982717, 82.889812 54.982717, 82.889836 54.982727, 82.889958 54.982770, 82.890073 54.982807, 82.890130 54.982826, 82.890246 54.982849, 82.890359 54.982857, 82.893255 54.982963, 82.893255 54.982963, 82.894460 54.983008, 82.894674 54.982985, 82.894849 54.982950, 82.894985 54.982904, 82.895245 54.982762, 82.895245 54.982762, 82.895336 54.982704, 82.895435 54.982643, 82.895510 54.982605, 82.895510 54.982605, 82.895703 54.982560, 82.895806 54.982541, 82.895889 54.982527, 82.895978 54.982516, 82.896055 54.982511, 82.896143 54.982511, 82.896223 54.982515, 82.896298 54.982525, 82.896370 54.982539, 82.896438 54.982558, 82.896499 54.982582, 82.896534 54.982598, 82.896580 54.982627, 82.896580 54.982627, 82.896608 54.982644, 82.896608 54.982644, 82.896643 54.982678, 82.896672 54.982712, 82.896696 54.982754, 82.896712 54.982797, 82.896719 54.982842, 82.896718 54.982889, 82.896708 54.982936, 82.896623 54.983150, 82.896608 54.983173, 82.896497 54.983234, 82.896497 54.983234, 82.897481 54.983818, 82.897481 54.983818, 82.902008 54.986509, 82.905672 54.988666, 82.905672 54.988666, 82.906032 54.988877, 82.906032 54.988877, 82.906468 54.989134, 82.906468 54.989134, 82.911846 54.992299, 82.911846 54.992299, 82.912281 54.992555, 82.912459 54.992611, 82.912639 54.992652, 82.912764 54.992675, 82.912899 54.992687, 82.913005 54.992661, 82.913005 54.992661, 82.913172 54.992644, 82.913300 54.992647, 82.913495 54.992667, 82.913670 54.992706, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936838 55.008937, 82.938158 55.009921, 82.938158 55.009921, 82.938683 55.010312, 82.938751 55.010350, 82.938990 55.010458, 82.938990 55.010458, 82.939101 55.010505, 82.939190 55.010549, 82.939301 55.010625, 82.939519 55.010799)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.939519 55.010799)",
+                          "id": "58"
+                        },
+                        {
+                          "geometry": "POINT(82.893255 54.982963)",
+                          "id": "59"
+                        },
+                        {
+                          "geometry": "POINT(82.890367 54.982046)",
+                          "id": "60"
+                        },
+                        {
+                          "geometry": "POINT(82.897481 54.983818)",
+                          "id": "61"
+                        },
+                        {
+                          "geometry": "POINT(82.895632 54.979476)",
+                          "id": "62"
+                        },
+                        {
+                          "geometry": "POINT(82.906468 54.989134)",
+                          "id": "63"
+                        },
+                        {
+                          "geometry": "POINT(82.911846 54.992299)",
+                          "id": "64"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "6"
+                          ],
+                          "subtype": "bus"
+                        },
+                        {
+                          "names": [
+                            "8"
+                          ],
+                          "subtype": "trolleybus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "56",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "6"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    },
+                    {
+                      "color": "",
+                      "names": [
+                        "8"
+                      ],
+                      "subtype": "trolleybus",
+                      "subtype_name": "троллейбус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": true,
+                    "comment": "",
+                    "name": "Покрышкина",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.939519 55.010799, 82.944291 55.014593, 82.944291 55.014593, 82.945977 55.015933, 82.945977 55.015933, 82.946041 55.015988, 82.946070 55.016041, 82.946065 55.016105, 82.946027 55.016167, 82.945992 55.016204, 82.945992 55.016204, 82.944640 55.016764, 82.944640 55.016764, 82.939692 55.018813, 82.939692 55.018813, 82.939191 55.019020, 82.939191 55.019020, 82.937726 55.019627, 82.937726 55.019627, 82.934936 55.020782, 82.930946 55.023252, 82.929965 55.023751, 82.927159 55.024915, 82.927159 55.024915, 82.925669 55.025533, 82.925669 55.025533, 82.923441 55.026457, 82.923441 55.026457, 82.923060 55.026615, 82.923060 55.026615, 82.922453 55.026867, 82.922453 55.026867, 82.921697 55.027180, 82.921453 55.027266, 82.921453 55.027266, 82.921406 55.027377, 82.921261 55.027921)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.944640 55.016764)",
+                          "id": "74"
+                        },
+                        {
+                          "geometry": "POINT(82.944291 55.014593)",
+                          "id": "75"
+                        },
+                        {
+                          "geometry": "POINT(82.939519 55.010799)",
+                          "id": "76"
+                        },
+                        {
+                          "geometry": "POINT(82.927159 55.024915)",
+                          "id": "77"
+                        },
+                        {
+                          "geometry": "POINT(82.921261 55.027921)",
+                          "id": "78"
+                        },
+                        {
+                          "geometry": "POINT(82.939692 55.018813)",
+                          "id": "79"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "5"
+                          ],
+                          "subtype": "bus"
+                        },
+                        {
+                          "names": [
+                            "13"
+                          ],
+                          "subtype": "trolleybus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "72",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "5"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    },
+                    {
+                      "color": "",
+                      "names": [
+                        "13"
+                      ],
+                      "subtype": "trolleybus",
+                      "subtype_name": "троллейбус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": true,
+                    "comment": "",
+                    "name": "Восход",
+                    "subtype": "trolleybus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.921261 55.027921, 82.921269 55.027918, 82.921176 55.028266, 82.920955 55.029091, 82.921042 55.029098, 82.921023 55.029169, 82.921169 55.029182, 82.921713 55.029230, 82.921825 55.029240, 82.923178 55.029358, 82.923387 55.029377, 82.923448 55.029382, 82.923979 55.029429, 82.924371 55.029463, 82.924484 55.029463, 82.924592 55.029459, 82.924679 55.029453, 82.924699 55.029452, 82.924712 55.029468, 82.924775 55.029515, 82.924837 55.029537, 82.924892 55.029551, 82.925041 55.029580, 82.925058 55.029505, 82.925886 55.029568, 82.926342 55.029604, 82.926482 55.029628, 82.926586 55.029656, 82.926647 55.029684, 82.926714 55.029717, 82.926779 55.029781, 82.926792 55.029874, 82.926783 55.029946, 82.926686 55.030359, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "86",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 660 м",
+                    "name": "Дом Ленина",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "87",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:06.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002512.87305",
+              "schedules": [
+                {
+                  "period": 6,
+                  "precise_time": "",
+                  "start_time": 63421,
+                  "start_time_utc": 1632134221,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 2238,
+              "total_walkway_distance": "пешком 10 мин",
+              "transfer_count": 1,
+              "waypoints": [
+                {
+                  "combined": true,
+                  "routes_names": [
+                    "6",
+                    "8"
+                  ],
+                  "subtype": "bus"
+                },
+                {
+                  "combined": true,
+                  "routes_names": [
+                    "5",
+                    "13"
+                  ],
+                  "subtype": "trolleybus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 1,
+              "id": "88",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898202 54.979829, 82.897541 54.979437, 82.897479 54.979461, 82.897387 54.979482, 82.897279 54.979410, 82.897223 54.979374, 82.897217 54.979376, 82.897201 54.979383, 82.897184 54.979389, 82.897166 54.979393, 82.897152 54.979395, 82.897146 54.979396, 82.897127 54.979398, 82.897108 54.979398, 82.897088 54.979398, 82.897068 54.979396, 82.897058 54.979394, 82.897049 54.979393, 82.897030 54.979389, 82.897013 54.979383, 82.896997 54.979376, 82.896983 54.979369, 82.896969 54.979360, 82.896958 54.979351, 82.896952 54.979345, 82.896954 54.979328, 82.896759 54.979319, 82.896759 54.979317, 82.896525 54.979306, 82.896525 54.979307, 82.896447 54.979304, 82.896415 54.979302, 82.896203 54.979424, 82.896045 54.979515, 82.895982 54.979471, 82.895733 54.979545, 82.895635 54.979478, 82.895632 54.979476)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "89",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 230 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.895632 54.979476, 82.891776 54.981358, 82.891776 54.981358, 82.890367 54.982046, 82.890367 54.982046, 82.889969 54.982240, 82.889844 54.982310, 82.889791 54.982353, 82.889729 54.982416, 82.889709 54.982475, 82.889707 54.982545, 82.889714 54.982595, 82.889730 54.982641, 82.889750 54.982670, 82.889750 54.982670, 82.889772 54.982686, 82.889789 54.982698, 82.889805 54.982711, 82.889812 54.982717, 82.889812 54.982717, 82.889836 54.982727, 82.889958 54.982770, 82.890073 54.982807, 82.890130 54.982826, 82.890246 54.982849, 82.890359 54.982857, 82.893255 54.982963, 82.893255 54.982963, 82.894460 54.983008, 82.894674 54.982985, 82.894849 54.982950, 82.894985 54.982904, 82.895245 54.982762, 82.895245 54.982762, 82.895336 54.982704, 82.895435 54.982643, 82.895510 54.982605, 82.895510 54.982605, 82.895703 54.982560, 82.895806 54.982541, 82.895889 54.982527, 82.895978 54.982516, 82.896055 54.982511, 82.896143 54.982511, 82.896223 54.982515, 82.896298 54.982525, 82.896370 54.982539, 82.896438 54.982558, 82.896499 54.982582, 82.896534 54.982598, 82.896580 54.982627, 82.896580 54.982627, 82.896608 54.982644, 82.896608 54.982644, 82.896643 54.982678, 82.896672 54.982712, 82.896696 54.982754, 82.896712 54.982797, 82.896719 54.982842, 82.896718 54.982889, 82.896708 54.982936, 82.896623 54.983150, 82.896608 54.983173, 82.896497 54.983234, 82.896497 54.983234, 82.897481 54.983818, 82.897481 54.983818, 82.902008 54.986509, 82.905672 54.988666, 82.905672 54.988666, 82.906032 54.988877, 82.906032 54.988877, 82.906468 54.989134, 82.906468 54.989134, 82.911846 54.992299, 82.911846 54.992299, 82.912281 54.992555, 82.912459 54.992611, 82.912639 54.992652, 82.912764 54.992675, 82.912899 54.992687, 82.913005 54.992661, 82.913005 54.992661, 82.913172 54.992644, 82.913300 54.992647, 82.913495 54.992667, 82.913670 54.992706, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936838 55.008937, 82.938158 55.009921, 82.938158 55.009921, 82.938683 55.010312, 82.938751 55.010350, 82.938990 55.010458, 82.938990 55.010458, 82.939101 55.010505, 82.939190 55.010549, 82.939301 55.010625, 82.939519 55.010799, 82.939519 55.010799, 82.944291 55.014593, 82.944291 55.014593, 82.945977 55.015933, 82.945977 55.015933, 82.946277 55.015809, 82.947204 55.015425, 82.947204 55.015425, 82.948643 55.014829, 82.948643 55.014829, 82.948759 55.014766, 82.948759 55.014766, 82.948896 55.014876, 82.948896 55.014876, 82.951370 55.016863, 82.951370 55.016863, 82.952575 55.017832, 82.953548 55.018614, 82.954504 55.019319, 82.955880 55.020425, 82.955880 55.020425, 82.958886 55.022840, 82.958886 55.022840, 82.960158 55.023861, 82.960158 55.023861, 82.960194 55.023891, 82.960194 55.023891, 82.961328 55.024801)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.961328 55.024801)",
+                          "id": "92"
+                        },
+                        {
+                          "geometry": "POINT(82.958886 55.022840)",
+                          "id": "93"
+                        },
+                        {
+                          "geometry": "POINT(82.947204 55.015425)",
+                          "id": "94"
+                        },
+                        {
+                          "geometry": "POINT(82.944291 55.014593)",
+                          "id": "95"
+                        },
+                        {
+                          "geometry": "POINT(82.951370 55.016863)",
+                          "id": "96"
+                        },
+                        {
+                          "geometry": "POINT(82.955880 55.020425)",
+                          "id": "97"
+                        },
+                        {
+                          "geometry": "POINT(82.939519 55.010799)",
+                          "id": "98"
+                        },
+                        {
+                          "geometry": "POINT(82.893255 54.982963)",
+                          "id": "99"
+                        },
+                        {
+                          "geometry": "POINT(82.890367 54.982046)",
+                          "id": "100"
+                        },
+                        {
+                          "geometry": "POINT(82.897481 54.983818)",
+                          "id": "101"
+                        },
+                        {
+                          "geometry": "POINT(82.895632 54.979476)",
+                          "id": "102"
+                        },
+                        {
+                          "geometry": "POINT(82.906468 54.989134)",
+                          "id": "103"
+                        },
+                        {
+                          "geometry": "POINT(82.911846 54.992299)",
+                          "id": "104"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "6"
+                          ],
+                          "subtype": "bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "90",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "6"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Покрышкина",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.961328 55.024801, 82.961316 55.024807, 82.961914 55.025287, 82.961925 55.025296, 82.962041 55.025363, 82.962131 55.025328, 82.962202 55.025387, 82.962121 55.025419, 82.962184 55.025469, 82.962082 55.025511, 82.962141 55.025558, 82.962121 55.025557)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "118",
+                  "type": "crossing",
+                  "waypoint": {
+                    "comment": "пешком 120 м",
+                    "name": "Воинская",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.962121 55.025557, 82.961974 55.025439, 82.961817 55.025349, 82.960080 55.023953, 82.960080 55.023953, 82.958301 55.024647, 82.958301 55.024647, 82.953752 55.026423, 82.953752 55.026423, 82.952332 55.026977, 82.952194 55.027016, 82.952048 55.027044, 82.951890 55.027056, 82.951728 55.027044, 82.951638 55.027022, 82.949415 55.025950, 82.949415 55.025950, 82.949170 55.025832, 82.949170 55.025832, 82.948928 55.025715, 82.948739 55.025650, 82.948523 55.025604, 82.948271 55.025599, 82.948064 55.025627, 82.947918 55.025663, 82.947425 55.025864, 82.945427 55.026613, 82.945134 55.026713, 82.941713 55.027999, 82.941713 55.027999, 82.941661 55.028018, 82.941661 55.028018, 82.941534 55.028066, 82.941534 55.028066, 82.940238 55.028574, 82.939921 55.028719, 82.939921 55.028719, 82.939602 55.028864, 82.939602 55.028864, 82.938803 55.029229, 82.938803 55.029229, 82.933318 55.031731, 82.932910 55.031881, 82.932632 55.031975, 82.932414 55.032040, 82.932228 55.032067, 82.932228 55.032067, 82.932117 55.032068, 82.932117 55.032068, 82.930991 55.031969)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.962121 55.025557)",
+                          "id": "121"
+                        },
+                        {
+                          "geometry": "POINT(82.958301 55.024647)",
+                          "id": "122"
+                        },
+                        {
+                          "geometry": "POINT(82.930991 55.031969)",
+                          "id": "123"
+                        },
+                        {
+                          "geometry": "POINT(82.941534 55.028066)",
+                          "id": "124"
+                        },
+                        {
+                          "geometry": "POINT(82.938803 55.029229)",
+                          "id": "125"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "51"
+                          ],
+                          "subtype": "shuttle_bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "119",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "51"
+                      ],
+                      "subtype": "shuttle_bus",
+                      "subtype_name": "маршрутка"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Воинская",
+                    "subtype": "shuttle_bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.930991 55.031969, 82.931028 55.031971, 82.931028 55.031977, 82.930702 55.031948, 82.929997 55.031886, 82.929840 55.031872, 82.929579 55.031849, 82.929353 55.031830, 82.928684 55.031771, 82.928283 55.031735, 82.928167 55.031731, 82.928162 55.031731, 82.928162 55.031659, 82.928125 55.031659, 82.928143 55.031594, 82.928019 55.031583, 82.928031 55.031540, 82.927625 55.031319, 82.926998 55.030976, 82.926702 55.031025, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "131",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 330 м",
+                    "name": "Семьи Шамшиных (ул. Орджоникидзе)",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "132",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:08.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002523.73438",
+              "schedules": [
+                {
+                  "period": 10,
+                  "precise_time": "",
+                  "start_time": 63661,
+                  "start_time_utc": 1632134461,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 2404,
+              "total_walkway_distance": "пешком 8 мин",
+              "transfer_count": 1,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "6"
+                  ],
+                  "subtype": "bus"
+                },
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "51"
+                  ],
+                  "subtype": "shuttle_bus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "133",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898527 54.980023, 82.899123 54.980377, 82.899325 54.980497, 82.899528 54.980618, 82.899670 54.980702, 82.899783 54.980639, 82.900244 54.980913, 82.900308 54.980951, 82.900300 54.981009, 82.900295 54.981012, 82.900382 54.981063, 82.899403 54.981611, 82.899917 54.981917, 82.899817 54.981972, 82.899772 54.982069, 82.899877 54.982377, 82.899869 54.982404, 82.899868 54.982427, 82.899869 54.982450, 82.899873 54.982468, 82.899881 54.982486, 82.899890 54.982502, 82.899905 54.982520, 82.899921 54.982536, 82.899935 54.982548, 82.899949 54.982557, 82.899972 54.982571, 82.899291 54.982951, 82.899039 54.983092, 82.898881 54.983180, 82.898767 54.983244, 82.898619 54.983326, 82.898580 54.983347, 82.898305 54.983500, 82.898036 54.983650, 82.897961 54.983605, 82.897933 54.983598, 82.897920 54.983597, 82.897903 54.983597, 82.897881 54.983600, 82.897662 54.983722, 82.897482 54.983820, 82.897481 54.983818)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "134",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 640 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897481 54.983818, 82.902008 54.986509, 82.905672 54.988666, 82.905672 54.988666, 82.906032 54.988877, 82.906032 54.988877, 82.906468 54.989134, 82.906468 54.989134, 82.911846 54.992299, 82.911846 54.992299, 82.912281 54.992555, 82.912459 54.992611, 82.912639 54.992652, 82.912764 54.992675, 82.912899 54.992687, 82.913005 54.992661, 82.913005 54.992661, 82.913172 54.992644, 82.913300 54.992647, 82.913495 54.992667, 82.913670 54.992706, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936973 55.008947, 82.937125 55.009004, 82.937259 55.009047, 82.937380 55.009064, 82.937554 55.009069, 82.937740 55.009053, 82.937955 55.009014, 82.938221 55.008911, 82.938382 55.008797, 82.938382 55.008797, 82.939896 55.007721, 82.940211 55.007439, 82.940211 55.007439, 82.940244 55.007378, 82.940245 55.007162, 82.940228 55.007102, 82.940228 55.007102, 82.940196 55.007065, 82.940145 55.007038, 82.940081 55.007008, 82.940016 55.006992, 82.939914 55.006982, 82.939811 55.006979, 82.939658 55.006988, 82.939658 55.006988, 82.937594 55.007836, 82.937594 55.007836, 82.935851 55.008551, 82.932248 55.010054, 82.932248 55.010054, 82.932097 55.010117, 82.931729 55.010273, 82.931729 55.010273, 82.929438 55.011250, 82.929438 55.011250, 82.928963 55.011480, 82.928772 55.011575, 82.928361 55.011838, 82.927971 55.012137, 82.927623 55.012315, 82.927195 55.012511, 82.927035 55.012575, 82.926945 55.012631, 82.926945 55.012631, 82.926605 55.012752, 82.926605 55.012752, 82.926071 55.013096, 82.925712 55.013421, 82.925367 55.013778, 82.925367 55.013778, 82.925210 55.013939, 82.925013 55.014215, 82.925013 55.014215, 82.924971 55.014354, 82.924861 55.014569, 82.924780 55.014759, 82.924780 55.014759, 82.924727 55.014862, 82.924703 55.014889, 82.924703 55.014889, 82.924685 55.014909, 82.924627 55.014986, 82.924587 55.015076, 82.924538 55.015214, 82.924407 55.015717, 82.924407 55.015718, 82.924366 55.015843, 82.924366 55.015843, 82.924274 55.016122, 82.924274 55.016122, 82.924178 55.016357, 82.924178 55.016357, 82.924177 55.016434, 82.924177 55.016434, 82.924171 55.016705, 82.924150 55.016876, 82.924078 55.017233, 82.924039 55.017380, 82.924039 55.017380, 82.924021 55.017447, 82.924021 55.017447, 82.923918 55.017835, 82.923716 55.018650, 82.923716 55.018650, 82.923701 55.018713, 82.923701 55.018713, 82.923420 55.019883, 82.923251 55.020558, 82.923251 55.020558, 82.922508 55.023551, 82.922297 55.024339, 82.922297 55.024339, 82.921623 55.026855, 82.921587 55.026942, 82.921587 55.026942, 82.921453 55.027266, 82.921453 55.027266, 82.921406 55.027377, 82.921261 55.027921, 82.921261 55.027921, 82.920717 55.029951, 82.920717 55.029951, 82.920446 55.030962, 82.920446 55.030962, 82.920424 55.031045, 82.920424 55.031045, 82.920200 55.031882)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.921261 55.027921)",
+                          "id": "137"
+                        },
+                        {
+                          "geometry": "POINT(82.922297 55.024339)",
+                          "id": "138"
+                        },
+                        {
+                          "geometry": "POINT(82.920200 55.031882)",
+                          "id": "139"
+                        },
+                        {
+                          "geometry": "POINT(82.924177 55.016434)",
+                          "id": "140"
+                        },
+                        {
+                          "geometry": "POINT(82.923251 55.020558)",
+                          "id": "141"
+                        },
+                        {
+                          "geometry": "POINT(82.897481 54.983818)",
+                          "id": "142"
+                        },
+                        {
+                          "geometry": "POINT(82.937594 55.007836)",
+                          "id": "143"
+                        },
+                        {
+                          "geometry": "POINT(82.906468 54.989134)",
+                          "id": "144"
+                        },
+                        {
+                          "geometry": "POINT(82.911846 54.992299)",
+                          "id": "145"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "28"
+                          ],
+                          "subtype": "bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "135",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "28"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Ватутина",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.920200 55.031882, 82.920206 55.031886, 82.920400 55.031162, 82.920430 55.031049, 82.920609 55.031063, 82.920875 55.031087, 82.921116 55.031109, 82.922817 55.031265, 82.923221 55.031302, 82.923459 55.031323, 82.923765 55.031351, 82.924074 55.031379, 82.924092 55.031307, 82.924129 55.031310, 82.924235 55.031312, 82.924386 55.031300, 82.924495 55.031289, 82.924593 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925213 55.031327, 82.925440 55.031347, 82.925549 55.031366, 82.925670 55.031391, 82.925766 55.031416, 82.925954 55.031340, 82.926026 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "155",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 540 м",
+                    "name": "Площадь Ленина",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "156",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:14.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002536.02344",
+              "schedules": [
+                {
+                  "period": 4294967295,
+                  "precise_time": "17:36",
+                  "start_time": 63360,
+                  "start_time_utc": 1632134160,
+                  "type": "precise"
+                },
+                {
+                  "period": 4294967295,
+                  "precise_time": "17:42",
+                  "start_time": 63720,
+                  "start_time_utc": 1632134520,
+                  "type": "precise"
+                },
+                {
+                  "period": 4294967295,
+                  "precise_time": "17:49",
+                  "start_time": 64140,
+                  "start_time_utc": 1632134940,
+                  "type": "precise"
+                }
+              ],
+              "total_duration": 2778,
+              "total_walkway_distance": "пешком 13 мин",
+              "transfer_count": 0,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "28"
+                  ],
+                  "subtype": "bus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "157",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898202 54.979829, 82.897541 54.979437, 82.897479 54.979461, 82.897387 54.979482, 82.897279 54.979410, 82.897223 54.979374, 82.897217 54.979376, 82.897201 54.979383, 82.897184 54.979389, 82.897166 54.979393, 82.897152 54.979395, 82.897146 54.979396, 82.897127 54.979398, 82.897108 54.979398, 82.897088 54.979398, 82.897068 54.979396, 82.897058 54.979394, 82.897049 54.979393, 82.897030 54.979389, 82.897013 54.979383, 82.896997 54.979376, 82.896983 54.979369, 82.896969 54.979360, 82.896958 54.979351, 82.896952 54.979345, 82.896954 54.979328, 82.896759 54.979319, 82.896759 54.979317, 82.896525 54.979306, 82.896525 54.979307, 82.896447 54.979304, 82.896415 54.979302, 82.896203 54.979424, 82.896045 54.979515, 82.895982 54.979471, 82.895733 54.979545, 82.895635 54.979478, 82.895632 54.979476)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "158",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 230 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.895632 54.979476, 82.891776 54.981358, 82.891776 54.981358, 82.890367 54.982046, 82.890367 54.982046, 82.889969 54.982240, 82.889844 54.982310, 82.889791 54.982353, 82.889729 54.982416, 82.889709 54.982475, 82.889707 54.982545, 82.889714 54.982595, 82.889730 54.982641, 82.889750 54.982670, 82.889750 54.982670, 82.889772 54.982686, 82.889789 54.982698, 82.889805 54.982711, 82.889812 54.982717, 82.889812 54.982717, 82.889827 54.982731, 82.889828 54.982732, 82.889832 54.982736, 82.889833 54.982737, 82.889846 54.982752, 82.889847 54.982753, 82.889850 54.982756, 82.889852 54.982757, 82.889864 54.982773, 82.889865 54.982774, 82.889867 54.982777, 82.889868 54.982778, 82.889879 54.982794, 82.889880 54.982795, 82.889882 54.982799, 82.889883 54.982800, 82.889892 54.982816, 82.889893 54.982817, 82.889895 54.982821, 82.889895 54.982822, 82.889903 54.982839, 82.889904 54.982840, 82.889905 54.982844, 82.889906 54.982845, 82.889912 54.982862, 82.889912 54.982863, 82.889913 54.982867, 82.889913 54.982868, 82.889918 54.982884, 82.889918 54.982885, 82.889919 54.982889, 82.889919 54.982891, 82.889922 54.982907, 82.889922 54.982909, 82.889922 54.982913, 82.889922 54.982914, 82.889922 54.982954, 82.889922 54.982956, 82.889922 54.982960, 82.889922 54.982961, 82.889919 54.982978, 82.889919 54.982979, 82.889918 54.982983, 82.889918 54.982984, 82.889913 54.983001, 82.889913 54.983001, 82.889912 54.983005, 82.889912 54.983007, 82.889906 54.983023, 82.889905 54.983024, 82.889904 54.983028, 82.889903 54.983030, 82.889895 54.983046, 82.889895 54.983048, 82.889893 54.983051, 82.889892 54.983052, 82.889883 54.983068, 82.889882 54.983069, 82.889880 54.983073, 82.889879 54.983074, 82.889868 54.983090, 82.889868 54.983091, 82.889865 54.983094, 82.889864 54.983096, 82.889852 54.983111, 82.889850 54.983112, 82.889847 54.983116, 82.889846 54.983117, 82.889833 54.983132, 82.889832 54.983132, 82.889828 54.983136, 82.889827 54.983137, 82.889825 54.983140, 82.889825 54.983140, 82.889778 54.983178, 82.889707 54.983224, 82.889690 54.983233, 82.889690 54.983233, 82.889679 54.983239, 82.889677 54.983240, 82.889671 54.983242, 82.889670 54.983243, 82.889647 54.983254, 82.889645 54.983254, 82.889640 54.983257, 82.889638 54.983257, 82.889614 54.983267, 82.889612 54.983268, 82.889607 54.983270, 82.889605 54.983271, 82.889580 54.983279, 82.889577 54.983280, 82.889571 54.983282, 82.889570 54.983283, 82.889544 54.983291, 82.889542 54.983291, 82.889536 54.983293, 82.889535 54.983293, 82.889534 54.983294, 82.889508 54.983301, 82.889505 54.983301, 82.889499 54.983303, 82.889497 54.983303, 82.889470 54.983309, 82.889468 54.983310, 82.889462 54.983311, 82.889459 54.983312, 82.889431 54.983317, 82.889430 54.983317, 82.889424 54.983318, 82.889421 54.983319, 82.889393 54.983323, 82.889390 54.983324, 82.889383 54.983325, 82.889381 54.983325, 82.889353 54.983328, 82.889350 54.983328, 82.889343 54.983329, 82.889342 54.983329, 82.889313 54.983332, 82.889311 54.983332, 82.889305 54.983332, 82.889302 54.983332, 82.889273 54.983334, 82.889271 54.983334, 82.889264 54.983334, 82.889261 54.983334, 82.889232 54.983335, 82.889230 54.983335, 82.889223 54.983335, 82.889221 54.983335, 82.889192 54.983334, 82.889189 54.983334, 82.889182 54.983334, 82.889180 54.983334, 82.889151 54.983332, 82.889148 54.983332, 82.889142 54.983332, 82.889140 54.983332, 82.889111 54.983329, 82.889110 54.983329, 82.889103 54.983328, 82.889100 54.983328, 82.889072 54.983325, 82.889070 54.983324, 82.889063 54.983324, 82.889060 54.983323, 82.889032 54.983319, 82.889029 54.983318, 82.889023 54.983317, 82.889022 54.983317, 82.888994 54.983312, 82.888992 54.983311, 82.888985 54.983310, 82.888983 54.983309, 82.888956 54.983303, 82.888954 54.983303, 82.888948 54.983301, 82.888945 54.983301, 82.888919 54.983294, 82.888917 54.983293, 82.888911 54.983291, 82.888909 54.983291, 82.888883 54.983283, 82.888853 54.983272, 82.888853 54.983272, 82.888588 54.983095, 82.888588 54.983095, 82.888490 54.983026, 82.888443 54.982999, 82.888385 54.982973, 82.888300 54.982949, 82.888190 54.982930, 82.884621 54.982753, 82.880342 54.982542, 82.879351 54.982495, 82.879351 54.982495, 82.872590 54.982192, 82.872430 54.982196, 82.872345 54.982201, 82.872234 54.982218, 82.872234 54.982218, 82.872208 54.982231, 82.872204 54.982234, 82.872184 54.982245, 82.872179 54.982248, 82.872158 54.982259, 82.872153 54.982261, 82.872131 54.982271, 82.872126 54.982273, 82.872102 54.982282, 82.872097 54.982284, 82.872073 54.982292, 82.872042 54.982301, 82.872042 54.982301, 82.872001 54.982335, 82.871966 54.982374, 82.871912 54.982454, 82.871883 54.982521, 82.871805 54.983050, 82.871805 54.983050, 82.871057 54.988160, 82.871057 54.988160, 82.870428 54.992459, 82.870428 54.992459, 82.870227 54.993824, 82.870237 54.993915, 82.870275 54.993993, 82.870331 54.994072, 82.870422 54.994193, 82.870518 54.994294, 82.870607 54.994393, 82.870607 54.994393, 82.870635 54.994422, 82.870635 54.994422, 82.870695 54.994472, 82.870735 54.994511, 82.870762 54.994545, 82.870772 54.994559, 82.870774 54.994561, 82.870795 54.994596, 82.870796 54.994598, 82.870813 54.994634, 82.870814 54.994636, 82.870826 54.994672, 82.870826 54.994675, 82.870833 54.994711, 82.870834 54.994714, 82.870836 54.994751, 82.870836 54.994753, 82.870834 54.994790, 82.870833 54.994792, 82.870826 54.994829, 82.870826 54.994831, 82.870814 54.994868, 82.870813 54.994870, 82.870796 54.994905, 82.870796 54.994906, 82.870774 54.994948, 82.870773 54.994950, 82.870739 54.995001, 82.870736 54.995004, 82.870686 54.995062, 82.870539 54.995177, 82.870539 54.995177, 82.870484 54.995202, 82.870484 54.995202, 82.870284 54.995343, 82.870143 54.995463, 82.870001 54.995593, 82.869972 54.995666, 82.869863 54.996419, 82.869882 54.996471, 82.869953 54.996547, 82.870226 54.996752, 82.870486 54.996897, 82.870486 54.996897, 82.870926 54.997175, 82.870997 54.997238, 82.871034 54.997283, 82.871062 54.997321, 82.871085 54.997369, 82.871095 54.997420, 82.871081 54.997993, 82.871074 54.998052, 82.871074 54.998052, 82.871050 54.998239, 82.871034 54.998517, 82.870997 54.998818, 82.870997 54.998818, 82.870389 55.003812, 82.870389 55.003812, 82.870344 55.004344, 82.870367 55.004540, 82.870404 55.004713, 82.870471 55.004879, 82.870546 55.005038, 82.870782 55.005515, 82.871431 55.006705, 82.871615 55.007027, 82.871806 55.007318, 82.872025 55.007597, 82.872331 55.007926, 82.872635 55.008205, 82.872988 55.008485, 82.873211 55.008637, 82.873211 55.008637, 82.873399 55.008765, 82.875362 55.009992, 82.875362 55.009992, 82.880350 55.013109, 82.880350 55.013109, 82.881607 55.013894, 82.881607 55.013894, 82.888596 55.018262, 82.888596 55.018262, 82.889144 55.018604, 82.889911 55.019076, 82.897455 55.023807, 82.897455 55.023807, 82.897719 55.023972, 82.898351 55.024366, 82.899104 55.024814, 82.899104 55.024814, 82.899449 55.025006, 82.899832 55.025195, 82.899832 55.025195, 82.900195 55.025349, 82.901669 55.025910, 82.901669 55.025910, 82.901932 55.026011, 82.904486 55.027022, 82.904868 55.027188, 82.905220 55.027377, 82.905655 55.027647, 82.906002 55.027910, 82.906820 55.028610, 82.906820 55.028610, 82.906864 55.028712, 82.906870 55.028786, 82.906869 55.028851, 82.906849 55.028897, 82.906818 55.028932, 82.906818 55.028932, 82.906651 55.028999, 82.906472 55.029080, 82.906339 55.029159, 82.906201 55.029252, 82.906027 55.029385, 82.905842 55.029543, 82.905561 55.029812)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.905561 55.029812)",
+                          "id": "161"
+                        },
+                        {
+                          "geometry": "POINT(82.890367 54.982046)",
+                          "id": "162"
+                        },
+                        {
+                          "geometry": "POINT(82.895632 54.979476)",
+                          "id": "163"
+                        },
+                        {
+                          "geometry": "POINT(82.873211 55.008637)",
+                          "id": "164"
+                        },
+                        {
+                          "geometry": "POINT(82.880350 55.013109)",
+                          "id": "165"
+                        },
+                        {
+                          "geometry": "POINT(82.870997 54.998818)",
+                          "id": "166"
+                        },
+                        {
+                          "geometry": "POINT(82.870389 55.003812)",
+                          "id": "167"
+                        },
+                        {
+                          "geometry": "POINT(82.871057 54.988160)",
+                          "id": "168"
+                        },
+                        {
+                          "geometry": "POINT(82.871805 54.983050)",
+                          "id": "169"
+                        },
+                        {
+                          "geometry": "POINT(82.879351 54.982495)",
+                          "id": "170"
+                        },
+                        {
+                          "geometry": "POINT(82.870428 54.992459)",
+                          "id": "171"
+                        },
+                        {
+                          "geometry": "POINT(82.888596 55.018262)",
+                          "id": "172"
+                        },
+                        {
+                          "geometry": "POINT(82.899104 55.024814)",
+                          "id": "173"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "14"
+                          ],
+                          "subtype": "bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "159",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "14"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Покрышкина",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "entrances": [
+                        {
+                          "color": "#e90101",
+                          "exit": false,
+                          "exit_comment": "нечетная сторона ул. Красный проспект; к Вокзальной магистрали; к улицам Ленина, Трудовая",
+                          "geometry": "POINT(82.918826 55.030670)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "1",
+                          "show_other_station": false
+                        },
+                        {
+                          "color": "#e90101",
+                          "exit": true,
+                          "exit_comment": "четная сторона ул. Красный проспект, улицу Орджоникидзе. В сторону Новосибирского Государственного Академического Театра Оперы и Балета, НГАХА",
+                          "geometry": "POINT(82.920865 55.030857)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "2",
+                          "show_other_station": false
+                        }
+                      ],
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.905561 55.029812, 82.905573 55.029809, 82.905849 55.029544, 82.906032 55.029388, 82.906062 55.029401, 82.906289 55.029229, 82.906441 55.029142, 82.906706 55.029014, 82.906745 55.029024, 82.906801 55.029041, 82.906839 55.029063, 82.906867 55.029095, 82.906892 55.029116)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.906892 55.029116, 82.906969 55.029184, 82.907535 55.028967)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.907535 55.028967, 82.907673 55.028966, 82.908709 55.029057, 82.908734 55.029055, 82.908746 55.029043, 82.908762 55.028984, 82.908820 55.028989, 82.908906 55.028997, 82.908895 55.029038, 82.909018 55.029049, 82.909029 55.029009, 82.909102 55.029016, 82.909869 55.029089, 82.910310 55.029131, 82.911075 55.029203, 82.911154 55.029211, 82.911416 55.029236, 82.912058 55.029297, 82.912198 55.029310, 82.912763 55.029364, 82.912880 55.029375, 82.913900 55.029472, 82.914167 55.029497, 82.914806 55.029558, 82.915109 55.029587, 82.915280 55.029603, 82.915804 55.029653, 82.916332 55.029703, 82.916423 55.029711, 82.916395 55.029809, 82.916518 55.029821, 82.916478 55.029959, 82.916323 55.030488, 82.916545 55.030508, 82.916601 55.030521, 82.917013 55.030557, 82.917163 55.030571, 82.917840 55.030630, 82.918572 55.030695, 82.918598 55.030702, 82.918616 55.030714, 82.918656 55.030752, 82.918786 55.030726, 82.918759 55.030680, 82.918825 55.030670)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.918825 55.030670, 82.919108 55.030618, 82.920330 55.030738, 82.920778 55.030848, 82.920865 55.030856, 82.920965 55.030864)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.920965 55.030864, 82.920942 55.030954, 82.920924 55.031019, 82.921173 55.031042, 82.922853 55.031195, 82.923247 55.031231, 82.923496 55.031254, 82.923784 55.031280, 82.923959 55.031296, 82.924092 55.031307, 82.924129 55.031310, 82.924235 55.031312, 82.924386 55.031300, 82.924495 55.031289, 82.924593 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925213 55.031327, 82.925440 55.031347, 82.925549 55.031366, 82.925670 55.031391, 82.925766 55.031416, 82.925954 55.031340, 82.926026 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "187",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 1,6 км",
+                    "name": "Театр Красный факел",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "188",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:16.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002544.42969",
+              "schedules": [
+                {
+                  "period": 4294967295,
+                  "precise_time": "17:33",
+                  "start_time": 63180,
+                  "start_time_utc": 1632133980,
+                  "type": "precise"
+                },
+                {
+                  "period": 4294967295,
+                  "precise_time": "17:40",
+                  "start_time": 63600,
+                  "start_time_utc": 1632134400,
+                  "type": "precise"
+                },
+                {
+                  "period": 4294967295,
+                  "precise_time": "17:53",
+                  "start_time": 64380,
+                  "start_time_utc": 1632135180,
+                  "type": "precise"
+                }
+              ],
+              "total_duration": 2887,
+              "total_walkway_distance": "пешком 21 мин",
+              "transfer_count": 0,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "14"
+                  ],
+                  "subtype": "bus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "189",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898527 54.980023, 82.899123 54.980377, 82.899325 54.980497, 82.899528 54.980618, 82.899670 54.980702, 82.899783 54.980639, 82.900244 54.980913, 82.900308 54.980951, 82.900300 54.981009, 82.899314 54.981560, 82.898691 54.981902, 82.898454 54.982034, 82.898541 54.982085, 82.898535 54.982088, 82.898552 54.982098, 82.898482 54.982131)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "190",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 380 м",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.898482 54.982131, 82.896497 54.983234, 82.896497 54.983234, 82.896385 54.983296, 82.896385 54.983296, 82.894741 54.984216, 82.894741 54.984216, 82.892712 54.985352, 82.892712 54.985352, 82.892521 54.985458, 82.892521 54.985458, 82.890764 54.986442, 82.890764 54.986442, 82.888916 54.987476, 82.888916 54.987476, 82.885451 54.989416, 82.884940 54.989697, 82.884940 54.989697, 82.884504 54.989936, 82.883487 54.990513, 82.882229 54.991231, 82.881935 54.991398, 82.880960 54.991955, 82.880447 54.992222, 82.880447 54.992222, 82.880337 54.992279, 82.880337 54.992279, 82.879703 54.992656, 82.879703 54.992656, 82.875659 54.994871, 82.875539 54.994921, 82.875373 54.994989, 82.875273 54.995019, 82.875166 54.995040, 82.875039 54.995050, 82.874912 54.995054, 82.871808 54.994908, 82.871660 54.994914, 82.871506 54.994926, 82.871362 54.994948, 82.871197 54.994981, 82.871019 54.995030, 82.870845 54.995082, 82.870539 54.995177, 82.870539 54.995177, 82.870484 54.995202, 82.870484 54.995202, 82.870284 54.995343, 82.870143 54.995463, 82.870001 54.995593, 82.869972 54.995666, 82.869863 54.996419, 82.869882 54.996471, 82.869953 54.996547, 82.870226 54.996752, 82.870486 54.996897, 82.870486 54.996897, 82.870926 54.997175, 82.870997 54.997238, 82.871034 54.997283, 82.871062 54.997321, 82.871085 54.997369, 82.871095 54.997420, 82.871081 54.997993, 82.871074 54.998052, 82.871074 54.998052, 82.871050 54.998239, 82.871034 54.998517, 82.870997 54.998818, 82.870997 54.998818, 82.870389 55.003812, 82.870389 55.003812, 82.870344 55.004344, 82.870367 55.004540, 82.870404 55.004713, 82.870471 55.004879, 82.870546 55.005038, 82.870782 55.005515, 82.871431 55.006705, 82.871615 55.007027, 82.871806 55.007318, 82.872025 55.007597, 82.872331 55.007926, 82.872635 55.008205, 82.872988 55.008485, 82.873211 55.008637, 82.873211 55.008637, 82.873399 55.008765, 82.875362 55.009992, 82.875362 55.009992, 82.880350 55.013109, 82.880350 55.013109, 82.881607 55.013894, 82.881607 55.013894, 82.888596 55.018262, 82.888596 55.018262, 82.889144 55.018604, 82.889911 55.019076, 82.897455 55.023807, 82.897455 55.023807, 82.897719 55.023972, 82.898351 55.024366, 82.899104 55.024814, 82.899104 55.024814, 82.899449 55.025006, 82.899832 55.025195, 82.899832 55.025195, 82.900195 55.025349, 82.901669 55.025910, 82.901669 55.025910, 82.901932 55.026011, 82.904486 55.027022, 82.904868 55.027188, 82.905220 55.027377, 82.905655 55.027647, 82.906002 55.027910, 82.906820 55.028610, 82.906820 55.028610, 82.906864 55.028712, 82.906870 55.028786, 82.906869 55.028851, 82.906849 55.028897, 82.906818 55.028932, 82.906818 55.028932, 82.906651 55.028999, 82.906472 55.029080, 82.906339 55.029159, 82.906201 55.029252, 82.906027 55.029385, 82.905842 55.029543, 82.905561 55.029812)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.905561 55.029812)",
+                          "id": "193"
+                        },
+                        {
+                          "geometry": "POINT(82.894741 54.984216)",
+                          "id": "194"
+                        },
+                        {
+                          "geometry": "POINT(82.890764 54.986442)",
+                          "id": "195"
+                        },
+                        {
+                          "geometry": "POINT(82.898482 54.982131)",
+                          "id": "196"
+                        },
+                        {
+                          "geometry": "POINT(82.873211 55.008637)",
+                          "id": "197"
+                        },
+                        {
+                          "geometry": "POINT(82.879703 54.992656)",
+                          "id": "198"
+                        },
+                        {
+                          "geometry": "POINT(82.880350 55.013109)",
+                          "id": "199"
+                        },
+                        {
+                          "geometry": "POINT(82.870997 54.998818)",
+                          "id": "200"
+                        },
+                        {
+                          "geometry": "POINT(82.870389 55.003812)",
+                          "id": "201"
+                        },
+                        {
+                          "geometry": "POINT(82.884940 54.989697)",
+                          "id": "202"
+                        },
+                        {
+                          "geometry": "POINT(82.888596 55.018262)",
+                          "id": "203"
+                        },
+                        {
+                          "geometry": "POINT(82.899104 55.024814)",
+                          "id": "204"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "96"
+                          ],
+                          "subtype": "bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "191",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "96"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "ГУМ",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "entrances": [
+                        {
+                          "color": "#e90101",
+                          "exit": false,
+                          "exit_comment": "нечетная сторона ул. Красный проспект; к Вокзальной магистрали; к улицам Ленина, Трудовая",
+                          "geometry": "POINT(82.918826 55.030670)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "1",
+                          "show_other_station": false
+                        },
+                        {
+                          "color": "#e90101",
+                          "exit": true,
+                          "exit_comment": "четная сторона ул. Красный проспект, улицу Орджоникидзе. В сторону Новосибирского Государственного Академического Театра Оперы и Балета, НГАХА",
+                          "geometry": "POINT(82.920865 55.030857)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "2",
+                          "show_other_station": false
+                        }
+                      ],
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.905561 55.029812, 82.905573 55.029809, 82.905849 55.029544, 82.906032 55.029388, 82.906062 55.029401, 82.906289 55.029229, 82.906441 55.029142, 82.906706 55.029014, 82.906745 55.029024, 82.906801 55.029041, 82.906839 55.029063, 82.906867 55.029095, 82.906892 55.029116)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.906892 55.029116, 82.906969 55.029184, 82.907535 55.028967)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.907535 55.028967, 82.907673 55.028966, 82.908709 55.029057, 82.908734 55.029055, 82.908746 55.029043, 82.908762 55.028984, 82.908820 55.028989, 82.908906 55.028997, 82.908895 55.029038, 82.909018 55.029049, 82.909029 55.029009, 82.909102 55.029016, 82.909869 55.029089, 82.910310 55.029131, 82.911075 55.029203, 82.911154 55.029211, 82.911416 55.029236, 82.912058 55.029297, 82.912198 55.029310, 82.912763 55.029364, 82.912880 55.029375, 82.913900 55.029472, 82.914167 55.029497, 82.914806 55.029558, 82.915109 55.029587, 82.915280 55.029603, 82.915804 55.029653, 82.916332 55.029703, 82.916423 55.029711, 82.916395 55.029809, 82.916518 55.029821, 82.916478 55.029959, 82.916323 55.030488, 82.916545 55.030508, 82.916601 55.030521, 82.917013 55.030557, 82.917163 55.030571, 82.917840 55.030630, 82.918572 55.030695, 82.918598 55.030702, 82.918616 55.030714, 82.918656 55.030752, 82.918786 55.030726, 82.918759 55.030680, 82.918825 55.030670)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.918825 55.030670, 82.919108 55.030618, 82.920330 55.030738, 82.920778 55.030848, 82.920865 55.030856, 82.920965 55.030864)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.920965 55.030864, 82.920942 55.030954, 82.920924 55.031019, 82.921173 55.031042, 82.922853 55.031195, 82.923247 55.031231, 82.923496 55.031254, 82.923784 55.031280, 82.923959 55.031296, 82.924092 55.031307, 82.924129 55.031310, 82.924235 55.031312, 82.924386 55.031300, 82.924495 55.031289, 82.924593 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925213 55.031327, 82.925440 55.031347, 82.925549 55.031366, 82.925670 55.031391, 82.925766 55.031416, 82.925954 55.031340, 82.926026 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "217",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 1,6 км",
+                    "name": "Театр Красный факел",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "218",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:16.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002557.30664",
+              "schedules": [
+                {
+                  "period": 20,
+                  "precise_time": "",
+                  "start_time": 64366,
+                  "start_time_utc": 1632135166,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 2894,
+              "total_walkway_distance": "пешком 23 мин",
+              "transfer_count": 0,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "96"
+                  ],
+                  "subtype": "bus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "219",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898527 54.980023, 82.899123 54.980377, 82.899325 54.980497, 82.899528 54.980618, 82.899670 54.980702, 82.899783 54.980639, 82.900244 54.980913, 82.900334 54.980863, 82.900373 54.980887, 82.900428 54.980856, 82.900657 54.980991, 82.901620 54.980457, 82.901808 54.980352, 82.902191 54.980139, 82.902322 54.980067, 82.902704 54.979855, 82.902783 54.979811, 82.902999 54.979691, 82.903152 54.979607, 82.903665 54.979321, 82.904084 54.979088, 82.904726 54.978732, 82.904938 54.978614, 82.905066 54.978543, 82.905366 54.978377, 82.905965 54.978044, 82.906130 54.977953, 82.906690 54.977641, 82.907169 54.977376, 82.907648 54.977109, 82.908116 54.976849, 82.908512 54.976630, 82.908606 54.976577, 82.908697 54.976631, 82.908927 54.976502, 82.909479 54.976831, 82.909692 54.976958, 82.909691 54.976958)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "220",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 1,1 км",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.909691 54.976958, 82.911556 54.978067, 82.911556 54.978067, 82.911599 54.978094, 82.911599 54.978094, 82.911786 54.978233, 82.912100 54.978486, 82.912297 54.978700, 82.912479 54.978948, 82.912650 54.979237, 82.912810 54.979587, 82.912810 54.979587, 82.912839 54.979651, 82.912839 54.979651, 82.912874 54.979733, 82.912874 54.979733, 82.912969 54.980009, 82.913020 54.980251, 82.913116 54.980876, 82.913436 54.983342, 82.913436 54.983342, 82.913817 54.986270, 82.913821 54.986374, 82.913821 54.986374, 82.913823 54.986410, 82.913823 54.986410, 82.913838 54.986724, 82.913838 54.986724, 82.913873 54.987462, 82.913872 54.988238, 82.913802 54.991094, 82.913802 54.991094, 82.913771 54.992069, 82.913760 54.992309, 82.913810 54.992576, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936973 55.008947, 82.937125 55.009004, 82.937259 55.009047, 82.937380 55.009064, 82.937554 55.009069, 82.937740 55.009053, 82.937955 55.009014, 82.938221 55.008911, 82.938382 55.008797, 82.938382 55.008797, 82.939896 55.007721, 82.940211 55.007439, 82.940211 55.007439, 82.940244 55.007378, 82.940245 55.007162, 82.940228 55.007102, 82.940228 55.007102, 82.940196 55.007065, 82.940145 55.007038, 82.940081 55.007008, 82.940016 55.006992, 82.939914 55.006982, 82.939811 55.006979, 82.939658 55.006988, 82.939658 55.006988, 82.937594 55.007836, 82.937594 55.007836, 82.935851 55.008551, 82.932248 55.010054, 82.932248 55.010054, 82.932097 55.010117, 82.931729 55.010273, 82.931729 55.010273, 82.929438 55.011250, 82.929438 55.011250, 82.928963 55.011480, 82.928772 55.011575, 82.928361 55.011838, 82.927971 55.012137, 82.927623 55.012315, 82.927195 55.012511, 82.927035 55.012575, 82.926945 55.012631, 82.926945 55.012631, 82.926605 55.012752, 82.926605 55.012752, 82.926071 55.013096, 82.925712 55.013421, 82.925367 55.013778, 82.925367 55.013778, 82.925210 55.013939, 82.925013 55.014215, 82.925013 55.014215, 82.924971 55.014354, 82.924861 55.014569, 82.924780 55.014759, 82.924780 55.014759, 82.924727 55.014862, 82.924703 55.014889, 82.924703 55.014889, 82.924685 55.014909, 82.924627 55.014986, 82.924587 55.015076, 82.924538 55.015214, 82.924407 55.015717, 82.924407 55.015718, 82.924366 55.015843, 82.924366 55.015843, 82.924274 55.016122, 82.924274 55.016122, 82.924178 55.016357, 82.924178 55.016357, 82.924177 55.016434, 82.924177 55.016434, 82.924171 55.016705, 82.924150 55.016876, 82.924078 55.017233, 82.924039 55.017380, 82.924039 55.017380, 82.924021 55.017447, 82.924021 55.017447, 82.923918 55.017835, 82.923716 55.018650, 82.923716 55.018650, 82.923701 55.018713, 82.923701 55.018713, 82.923590 55.018715, 82.923333 55.018718, 82.923222 55.018721, 82.923222 55.018721, 82.923205 55.018723, 82.923075 55.018758, 82.922956 55.018809, 82.922628 55.018985, 82.922379 55.019128, 82.922153 55.019271, 82.921974 55.019399, 82.921424 55.019817, 82.921424 55.019817, 82.920726 55.020348, 82.920502 55.020518, 82.920447 55.020555, 82.920306 55.020642, 82.920303 55.020643, 82.920152 55.020724, 82.920150 55.020725, 82.919056 55.021253, 82.918982 55.021297, 82.918940 55.021338, 82.918889 55.021432, 82.918679 55.021984, 82.918558 55.022312, 82.918418 55.022837, 82.918418 55.022837, 82.918319 55.023210, 82.918078 55.024123, 82.917354 55.026871, 82.917091 55.027794, 82.917091 55.027794, 82.916873 55.028555, 82.916547 55.029697, 82.916210 55.030853)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.921424 55.019817)",
+                          "id": "223"
+                        },
+                        {
+                          "geometry": "POINT(82.918418 55.022837)",
+                          "id": "224"
+                        },
+                        {
+                          "geometry": "POINT(82.916210 55.030853)",
+                          "id": "225"
+                        },
+                        {
+                          "geometry": "POINT(82.924177 55.016434)",
+                          "id": "226"
+                        },
+                        {
+                          "geometry": "POINT(82.912839 54.979651)",
+                          "id": "227"
+                        },
+                        {
+                          "geometry": "POINT(82.913436 54.983342)",
+                          "id": "228"
+                        },
+                        {
+                          "geometry": "POINT(82.937594 55.007836)",
+                          "id": "229"
+                        },
+                        {
+                          "geometry": "POINT(82.913802 54.991094)",
+                          "id": "230"
+                        },
+                        {
+                          "geometry": "POINT(82.913838 54.986724)",
+                          "id": "231"
+                        },
+                        {
+                          "geometry": "POINT(82.917091 55.027794)",
+                          "id": "232"
+                        },
+                        {
+                          "geometry": "POINT(82.909691 54.976958)",
+                          "id": "233"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "32"
+                          ],
+                          "subtype": "shuttle_bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "221",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "32"
+                      ],
+                      "subtype": "shuttle_bus",
+                      "subtype_name": "маршрутка"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Немировича-Данченко",
+                    "subtype": "shuttle_bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "entrances": [
+                        {
+                          "color": "#e90101",
+                          "exit": false,
+                          "exit_comment": "нечетная сторона ул. Красный проспект; к Вокзальной магистрали; к улицам Ленина, Трудовая",
+                          "geometry": "POINT(82.918826 55.030670)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "1",
+                          "show_other_station": false
+                        },
+                        {
+                          "color": "#e90101",
+                          "exit": true,
+                          "exit_comment": "четная сторона ул. Красный проспект, улицу Орджоникидзе. В сторону Новосибирского Государственного Академического Театра Оперы и Балета, НГАХА",
+                          "geometry": "POINT(82.920865 55.030857)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Ленина",
+                          "number": "2",
+                          "show_other_station": false
+                        }
+                      ],
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.916210 55.030853, 82.916216 55.030857, 82.916323 55.030488, 82.916545 55.030508, 82.916601 55.030521, 82.917013 55.030557, 82.917163 55.030571, 82.917840 55.030630, 82.918572 55.030695, 82.918598 55.030702, 82.918616 55.030714, 82.918656 55.030752, 82.918786 55.030726, 82.918759 55.030680, 82.918825 55.030670)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.918825 55.030670, 82.919108 55.030618, 82.920330 55.030738, 82.920778 55.030848, 82.920865 55.030856, 82.920965 55.030864)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.920965 55.030864, 82.920942 55.030954, 82.920924 55.031019, 82.921173 55.031042, 82.922853 55.031195, 82.923247 55.031231, 82.923496 55.031254, 82.923784 55.031280, 82.923959 55.031296, 82.924092 55.031307, 82.924129 55.031310, 82.924235 55.031312, 82.924386 55.031300, 82.924495 55.031289, 82.924593 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925213 55.031327, 82.925440 55.031347, 82.925549 55.031366, 82.925670 55.031391, 82.925766 55.031416, 82.925954 55.031340, 82.926026 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "245",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 780 м",
+                    "name": "Центр (ул. Советская)",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "246",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:20.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002566.55273",
+              "schedules": [
+                {
+                  "period": 30,
+                  "precise_time": "",
+                  "start_time": 65421,
+                  "start_time_utc": 1632136221,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 3125,
+              "total_walkway_distance": "пешком 21 мин",
+              "transfer_count": 0,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "32"
+                  ],
+                  "subtype": "shuttle_bus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "247",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "entrances": [
+                        {
+                          "color": "#e90101",
+                          "exit": false,
+                          "exit_comment": "на улицу Ватутина, ГУМ \"Россия\"",
+                          "geometry": "POINT(82.896779 54.982477)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Маркса",
+                          "number": "6",
+                          "show_other_station": false
+                        },
+                        {
+                          "color": "#e90101",
+                          "exit": true,
+                          "exit_comment": "на улицу Ватутина, проспект Карла Маркса",
+                          "geometry": "POINT(82.896674 54.983529)",
+                          "metro_logo": "metro_novosibirsk",
+                          "name": "Площадь Маркса",
+                          "number": "5",
+                          "show_other_station": false
+                        }
+                      ],
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898527 54.980023, 82.899123 54.980377, 82.899325 54.980497, 82.899528 54.980618, 82.899670 54.980702, 82.898976 54.981091, 82.898949 54.981106, 82.898747 54.981175, 82.898552 54.981088, 82.898358 54.981194, 82.898335 54.981197, 82.898314 54.981192, 82.898387 54.981235, 82.898326 54.981347, 82.898245 54.981498, 82.897915 54.981683, 82.897804 54.981773, 82.897561 54.981850, 82.897286 54.982004, 82.897263 54.982012, 82.897240 54.982009, 82.897195 54.982083, 82.897130 54.982101, 82.896678 54.982354, 82.896812 54.982432, 82.896756 54.982464, 82.896779 54.982477)",
+                          "z_first": 0,
+                          "z_last": 0
+                        },
+                        {
+                          "selection": "LINESTRING(82.896779 54.982477, 82.896957 54.982582, 82.896125 54.983050, 82.896381 54.983229, 82.896782 54.983468, 82.896674 54.983529, 82.896794 54.983601)",
+                          "z_first": -1,
+                          "z_last": -1
+                        },
+                        {
+                          "selection": "LINESTRING(82.896794 54.983601, 82.896821 54.983657, 82.896737 54.983704, 82.896703 54.983723, 82.896600 54.983777, 82.896614 54.983895, 82.896600 54.984280, 82.896588 54.984618, 82.896750 54.984715, 82.897189 54.984979, 82.897419 54.985117, 82.897617 54.985236, 82.897633 54.985258, 82.897651 54.985291, 82.897646 54.985318, 82.897626 54.985339, 82.897314 54.985512, 82.897017 54.985676, 82.896840 54.985774, 82.896469 54.985979, 82.896189 54.986135, 82.896631 54.986400, 82.897069 54.986663, 82.896912 54.986753, 82.897048 54.986834, 82.897612 54.987170, 82.897996 54.987397, 82.898053 54.987796, 82.898074 54.987941, 82.898107 54.988170, 82.898200 54.988225, 82.897895 54.988394, 82.898197 54.988572, 82.897972 54.988696, 82.898051 54.988743, 82.897999 54.988777, 82.897906 54.988841, 82.897851 54.988878, 82.897165 54.989261, 82.896927 54.989451, 82.896621 54.989622, 82.896567 54.989653, 82.895947 54.990000, 82.895633 54.990175, 82.895532 54.990192, 82.895738 54.991084, 82.895880 54.991169, 82.895916 54.991213, 82.895959 54.991319, 82.895770 54.991360, 82.895706 54.991372, 82.895598 54.991491, 82.895594 54.991794, 82.895578 54.991926, 82.895516 54.992448, 82.895511 54.992483, 82.895559 54.992486, 82.895712 54.992494, 82.895711 54.992499)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "248",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 1,9 км",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.895711 54.992499, 82.897714 54.992609, 82.899498 54.992702, 82.901215 54.992790, 82.904052 54.992900, 82.904052 54.992900, 82.904215 54.992906, 82.904540 54.992921, 82.904696 54.992939, 82.904696 54.992939, 82.905814 54.993052, 82.905814 54.993052, 82.906325 54.993074, 82.906325 54.993074, 82.910054 54.993232, 82.910410 54.993241, 82.910410 54.993241, 82.910895 54.993242, 82.911164 54.993232, 82.911561 54.993199, 82.911905 54.993154, 82.912070 54.993120, 82.912219 54.993077, 82.912384 54.993007, 82.912500 54.992942, 82.912500 54.992942, 82.912582 54.992846, 82.912665 54.992780, 82.912752 54.992738, 82.913005 54.992661, 82.913005 54.992661, 82.913172 54.992644, 82.913300 54.992647, 82.913495 54.992667, 82.913670 54.992706, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936838 55.008937, 82.938158 55.009921, 82.938158 55.009921, 82.938683 55.010312, 82.938751 55.010350, 82.938990 55.010458, 82.938990 55.010458, 82.939101 55.010505, 82.939190 55.010549, 82.939301 55.010625, 82.939519 55.010799, 82.939519 55.010799, 82.944291 55.014593, 82.944291 55.014593, 82.945977 55.015933, 82.945977 55.015933, 82.946041 55.015988, 82.946070 55.016041, 82.946065 55.016105, 82.946027 55.016167, 82.945992 55.016204, 82.945992 55.016204, 82.944640 55.016764, 82.944640 55.016764, 82.939692 55.018813, 82.939692 55.018813, 82.939191 55.019020, 82.939191 55.019020, 82.937726 55.019627, 82.937726 55.019627, 82.934936 55.020782, 82.930946 55.023252, 82.929965 55.023751, 82.927159 55.024915, 82.927159 55.024915, 82.925669 55.025533, 82.925669 55.025533, 82.923441 55.026457, 82.923441 55.026457, 82.923060 55.026615, 82.923060 55.026615, 82.922453 55.026867, 82.922453 55.026867, 82.921697 55.027180, 82.921453 55.027266, 82.921453 55.027266, 82.921406 55.027377, 82.921261 55.027921, 82.921261 55.027921, 82.920717 55.029951, 82.920717 55.029951, 82.920446 55.030962, 82.920446 55.030962, 82.920424 55.031045, 82.920424 55.031045, 82.920200 55.031882)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.944640 55.016764)",
+                          "id": "251"
+                        },
+                        {
+                          "geometry": "POINT(82.944291 55.014593)",
+                          "id": "252"
+                        },
+                        {
+                          "geometry": "POINT(82.939519 55.010799)",
+                          "id": "253"
+                        },
+                        {
+                          "geometry": "POINT(82.927159 55.024915)",
+                          "id": "254"
+                        },
+                        {
+                          "geometry": "POINT(82.921261 55.027921)",
+                          "id": "255"
+                        },
+                        {
+                          "geometry": "POINT(82.920200 55.031882)",
+                          "id": "256"
+                        },
+                        {
+                          "geometry": "POINT(82.939692 55.018813)",
+                          "id": "257"
+                        },
+                        {
+                          "geometry": "POINT(82.895711 54.992499)",
+                          "id": "258"
+                        },
+                        {
+                          "geometry": "POINT(82.910410 54.993241)",
+                          "id": "259"
+                        },
+                        {
+                          "geometry": "POINT(82.904052 54.992900)",
+                          "id": "260"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "5"
+                          ],
+                          "subtype": "bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "249",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "5"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Зональный институт",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.920200 55.031882, 82.920206 55.031886, 82.920400 55.031162, 82.920430 55.031049, 82.920609 55.031063, 82.920875 55.031087, 82.921116 55.031109, 82.922817 55.031265, 82.923221 55.031302, 82.923459 55.031323, 82.923765 55.031351, 82.924074 55.031379, 82.924092 55.031307, 82.924129 55.031310, 82.924235 55.031312, 82.924386 55.031300, 82.924495 55.031289, 82.924593 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925213 55.031327, 82.925440 55.031347, 82.925549 55.031366, 82.925670 55.031391, 82.925766 55.031416, 82.925954 55.031340, 82.926026 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "271",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 540 м",
+                    "name": "Площадь Ленина",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "272",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:25.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002576.07422",
+              "schedules": [
+                {
+                  "period": 30,
+                  "precise_time": "",
+                  "start_time": 66018,
+                  "start_time_utc": 1632136818,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 3458,
+              "total_walkway_distance": "пешком 28 мин",
+              "transfer_count": 0,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "5"
+                  ],
+                  "subtype": "bus"
+                }
+              ]
+            },
+            {
+              "crossing_count": 0,
+              "id": "273",
+              "movements": [
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.897766 54.980075, 82.898245 54.979989, 82.898362 54.979924, 82.898527 54.980023, 82.899123 54.980377, 82.899325 54.980497, 82.899528 54.980618, 82.899670 54.980702, 82.899783 54.980639, 82.900244 54.980913, 82.900334 54.980863, 82.900373 54.980887, 82.900428 54.980856, 82.900657 54.980991, 82.901620 54.980457, 82.901808 54.980352, 82.902191 54.980139, 82.902322 54.980067, 82.902704 54.979855, 82.902894 54.979750, 82.903297 54.979798, 82.903521 54.979821, 82.903909 54.979860, 82.904064 54.979952, 82.904232 54.979983, 82.904345 54.980051, 82.904523 54.980152, 82.904674 54.980237, 82.904962 54.980289, 82.905167 54.980323, 82.905427 54.980502, 82.905718 54.980701, 82.905750 54.980730, 82.906172 54.980983, 82.906483 54.980812, 82.906517 54.980793, 82.906623 54.980735, 82.906626 54.980733, 82.907032 54.980509, 82.907226 54.980402, 82.908304 54.979808, 82.908366 54.979774, 82.908379 54.979766, 82.908465 54.979719, 82.908668 54.979608, 82.908675 54.979604, 82.909154 54.979345, 82.909409 54.979206, 82.909558 54.979126, 82.909832 54.978979, 82.909957 54.978910, 82.910066 54.978851, 82.910332 54.978707, 82.910894 54.978403, 82.911231 54.978221, 82.911306 54.978180, 82.911244 54.978143, 82.911473 54.978015, 82.911632 54.978109, 82.911786 54.978229, 82.911811 54.978249, 82.912102 54.978483, 82.912299 54.978697, 82.912407 54.978844, 82.912481 54.978946, 82.912651 54.979232, 82.912781 54.979517, 82.912842 54.979650, 82.912839 54.979651)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "274",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 1,4 км",
+                    "name": "Новосибирск Сан Сити многофункциональный комплекс",
+                    "subtype": "start"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.912839 54.979651, 82.912874 54.979733, 82.912874 54.979733, 82.912969 54.980009, 82.913020 54.980251, 82.913116 54.980876, 82.913436 54.983342, 82.913436 54.983342, 82.913817 54.986270, 82.913821 54.986374, 82.913821 54.986374, 82.913823 54.986410, 82.913823 54.986410, 82.913838 54.986724, 82.913838 54.986724, 82.913873 54.987462, 82.913872 54.988238, 82.913802 54.991094, 82.913802 54.991094, 82.913771 54.992069, 82.913760 54.992309, 82.913810 54.992576, 82.913873 54.992756, 82.913873 54.992756, 82.914019 54.993119, 82.914116 54.993328, 82.914303 54.993608, 82.914389 54.993714, 82.914469 54.993789, 82.936168 55.008455, 82.936630 55.008786, 82.936630 55.008786, 82.936973 55.008947, 82.937125 55.009004, 82.937259 55.009047, 82.937380 55.009064, 82.937554 55.009069, 82.937740 55.009053, 82.937955 55.009014, 82.938221 55.008911, 82.938382 55.008797, 82.938382 55.008797, 82.939896 55.007721, 82.940211 55.007439, 82.940211 55.007439, 82.940244 55.007378, 82.940245 55.007162, 82.940228 55.007102, 82.940228 55.007102, 82.940196 55.007065, 82.940145 55.007038, 82.940081 55.007008, 82.940016 55.006992, 82.939914 55.006982, 82.939811 55.006979, 82.939658 55.006988, 82.939658 55.006988, 82.937594 55.007836, 82.937594 55.007836, 82.935851 55.008551, 82.932248 55.010054, 82.932248 55.010054, 82.932097 55.010117, 82.931729 55.010273, 82.931729 55.010273, 82.929438 55.011250, 82.929438 55.011250, 82.928963 55.011480, 82.928772 55.011575, 82.928361 55.011838, 82.927971 55.012137, 82.927623 55.012315, 82.927195 55.012511, 82.927035 55.012575, 82.926945 55.012631, 82.926945 55.012631, 82.926605 55.012752, 82.926605 55.012752, 82.926071 55.013096, 82.925712 55.013421, 82.925367 55.013778, 82.925367 55.013778, 82.925210 55.013939, 82.925013 55.014215, 82.925013 55.014215, 82.924971 55.014354, 82.924861 55.014569, 82.924780 55.014759, 82.924780 55.014759, 82.924727 55.014862, 82.924703 55.014889, 82.924703 55.014889, 82.924685 55.014909, 82.924627 55.014986, 82.924587 55.015076, 82.924538 55.015214, 82.924407 55.015717, 82.924407 55.015718, 82.924366 55.015843, 82.924366 55.015843, 82.924274 55.016122, 82.924274 55.016122, 82.924178 55.016357, 82.924178 55.016357, 82.924177 55.016434, 82.924177 55.016434, 82.924171 55.016705, 82.924150 55.016876, 82.924078 55.017233, 82.924039 55.017380, 82.924039 55.017380, 82.924021 55.017447, 82.924021 55.017447, 82.923918 55.017835, 82.923716 55.018650, 82.923716 55.018650, 82.923701 55.018713, 82.923701 55.018713, 82.923420 55.019883, 82.923251 55.020558, 82.923251 55.020558, 82.922508 55.023551, 82.922297 55.024339, 82.922297 55.024339, 82.921623 55.026855, 82.921587 55.026942, 82.921587 55.026942, 82.921453 55.027266, 82.921453 55.027266, 82.921406 55.027377, 82.921261 55.027921, 82.921261 55.027921, 82.920717 55.029951, 82.920717 55.029951, 82.920446 55.030962, 82.920446 55.030962, 82.920424 55.031045, 82.920424 55.031045, 82.919969 55.031005, 82.919969 55.031005, 82.919157 55.030928, 82.919011 55.030914, 82.918942 55.030913, 82.918857 55.030922, 82.918777 55.030932, 82.918068 55.031086)"
+                        }
+                      ],
+                      "platforms": [
+                        {
+                          "geometry": "POINT(82.918068 55.031086)",
+                          "id": "277"
+                        },
+                        {
+                          "geometry": "POINT(82.924177 55.016434)",
+                          "id": "278"
+                        },
+                        {
+                          "geometry": "POINT(82.912839 54.979651)",
+                          "id": "279"
+                        },
+                        {
+                          "geometry": "POINT(82.937594 55.007836)",
+                          "id": "280"
+                        }
+                      ],
+                      "routes": [
+                        {
+                          "names": [
+                            "525"
+                          ],
+                          "subtype": "bus"
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "275",
+                  "routes": [
+                    {
+                      "color": "",
+                      "names": [
+                        "525"
+                      ],
+                      "subtype": "bus",
+                      "subtype_name": "автобус"
+                    }
+                  ],
+                  "type": "passage",
+                  "waypoint": {
+                    "combined": false,
+                    "comment": "",
+                    "name": "Областная больница",
+                    "subtype": "bus"
+                  }
+                },
+                {
+                  "alternatives": [
+                    {
+                      "geometry": [
+                        {
+                          "selection": "LINESTRING(82.918068 55.031086, 82.918077 55.031098, 82.918237 55.031063, 82.918445 55.031018, 82.918844 55.030932, 82.918962 55.030921, 82.919034 55.030921, 82.919959 55.031009, 82.919918 55.031118, 82.920400 55.031162, 82.920430 55.031049, 82.920609 55.031063, 82.920875 55.031087, 82.921116 55.031109, 82.922817 55.031265, 82.923221 55.031302, 82.923459 55.031323, 82.923765 55.031351, 82.924074 55.031379, 82.924092 55.031307, 82.924129 55.031310, 82.924235 55.031312, 82.924386 55.031300, 82.924495 55.031289, 82.924593 55.031284, 82.924683 55.031283, 82.924775 55.031287, 82.925213 55.031327, 82.925440 55.031347, 82.925549 55.031366, 82.925670 55.031391, 82.925766 55.031416, 82.925954 55.031340, 82.926026 55.031399, 82.926045 55.031392, 82.926211 55.031295, 82.926427 55.031127, 82.926483 55.031066, 82.926520 55.031006, 82.926555 55.030918, 82.926688 55.030932, 82.926699 55.030979)",
+                          "z_first": 0,
+                          "z_last": 0
+                        }
+                      ]
+                    }
+                  ],
+                  "id": "285",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "пешком 620 м",
+                    "name": "Центр (ул. Орджоникидзе)",
+                    "subtype": "pedestrian"
+                  }
+                },
+                {
+                  "id": "286",
+                  "type": "walkway",
+                  "waypoint": {
+                    "comment": "Вы на месте в 18:51.",
+                    "name": "Новосибирск Театр Оперы и балета",
+                    "subtype": "finish"
+                  }
+                }
+              ],
+              "pedestrian": false,
+              "route_id": "sample/ctxrouting/16321337002584.97461",
+              "schedules": [
+                {
+                  "period": 90,
+                  "precise_time": "",
+                  "start_time": 69263,
+                  "start_time_utc": 1632140063,
+                  "type": "periodic"
+                }
+              ],
+              "total_duration": 5018,
+              "total_walkway_distance": "пешком 23 мин",
+              "transfer_count": 0,
+              "waypoints": [
+                {
+                  "combined": false,
+                  "routes_names": [
+                    "525"
+                  ],
+                  "subtype": "bus"
+                }
+              ]
+            }
+          ]
+        ]
+      },
+      "ResponseType": {
+        "type": "string",
+        "enum": [
+          "result",
+          "error"
+        ],
+        "description": "Тип ответа: <ul type=\"disk\"> <li>result - Успешный результат, </li><li>error - Ошибка, </li></ul>"
+      },
+      "Route": {
+        "properties": {
+          "names": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Названия маршрутов"
+          },
+          "subtype": {
+            "$ref": "#/components/schemas/CTXTransportType"
+          },
+          "subtype_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Локализованное название вида транспорта"
+          },
+          "color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Цвет иконки маршрута"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "subtype"
+        ],
+        "description": "Описание маршрута, идущего на заданном участке."
+      },
+      "ScheduleEventsItem": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ScheduleEventsItemType"
+          },
+          "start_time": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Локальное время прибытия в виде количества секунд от начала дня"
+          },
+          "start_time_utc": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Дата и время прибытия в формате Unix-времени"
+          },
+          "precise_time": {
+            "type": "string",
+            "description": "Время прибытия в формате \"ЧЧ:ММ\""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "start_time",
+          "start_time_utc",
+          "precise_time"
+        ],
+        "description": "Событие для транспортного маршрута."
+      },
+      "ScheduleEventsItemType": {
+        "type": "string",
+        "enum": [
+          "begin_trips",
+          "night_break"
+        ],
+        "description": "Тип события расписания.: <ul type=\"disk\"> <li>begin_trips - начало маршрута, </li><li>night_break - ночной перерыв, </li></ul>"
+      },
+      "ScheduleItem": {
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/ScheduleItemType"
+          },
+          "period": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Период следования транспорта в минутах (для типа расписания periodic)"
+          },
+          "start_time": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Локальное время прибытия в виде количества секунд от начала дня"
+          },
+          "start_time_utc": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "description": "Дата и время прибытия в формате Unix-времени"
+          },
+          "precise_time": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Время прибытия в формате \"ЧЧ:ММ\""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "type",
+          "start_time",
+          "start_time_utc"
+        ],
+        "description": "Расписание движения транспорта."
+      },
+      "ScheduleItemType": {
+        "type": "string",
+        "enum": [
+          "periodic",
+          "precise"
+        ],
+        "description": "Тип расписания.: <ul type=\"disk\"> <li>periodic - периодическое, </li><li>precise - точное, </li></ul>"
+      },
+      "SourceTargetObj": {
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Произвольное текстовое обозначение"
+          },
+          "point": {
+            "$ref": "#/components/schemas/Point"
+          },
+          "object_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Идентификатор здания или организации, к которой будет привязана точка"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "point"
+        ],
+        "description": "Точка маршрута.",
+        "example": {
+          "name": "Point A",
+          "point": {
+            "lat": 51.734588,
+            "lon": 36.149328
+          }
+        }
+      },
+      "SubPlatform": {
+        "properties": {
+          "geometry": {
+            "type": "string",
+            "description": "Координаты остановки в формате WKT (POINT)"
+          },
+          "id": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Идентификатор объекта"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "geometry",
+          "id"
+        ],
+        "description": "Координаты остановки."
+      },
+      "Waypoint": {
+        "properties": {
+          "combined": {
+            "type": "boolean",
+            "description": "Если true, то участок маршрута можно проехать на разных видах транспорта"
+          },
+          "routes": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Названия транспортных маршрутов"
+          },
+          "routes_names": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Названия маршрутов"
+          },
+          "subtype": {
+            "$ref": "#/components/schemas/CTXTransportType"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "combined",
+          "subtype"
+        ],
+        "description": "Список транспортных маршрутов для каждого вида транспорта."
+      },
+      "WaypointSubType": {
+        "type": "string",
+        "enum": [
+          "start",
+          "finish",
+          "walkway",
+          "pedestrian",
+          "metro",
+          "light_metro",
+          "suburban_train",
+          "aeroexpress",
+          "tram",
+          "bus",
+          "trolleybus",
+          "shuttle_bus",
+          "monorail",
+          "funicular_railway",
+          "river_transport",
+          "cable_car",
+          "light_rail",
+          "premetro",
+          "mcc",
+          "mcd"
+        ],
+        "description": "Вид транспорта: <ul type=\"disk\"> <li>start - Начало маршрута, обычно точка A, </li><li>finish - Конец маршрута, обычно точка B, </li><li>walkway - Для промежуточных остановок, от которых нужно идти пешком, </li><li>pedestrian - пеший, </li><li>metro - метро, </li><li>light_metro - легкое метро, </li><li>suburban_train - пригородный поезд, </li><li>aeroexpress - аэроэкспресс, </li><li>tram - трамвай, </li><li>bus - автобус, </li><li>trolleybus - троллейбус, </li><li>shuttle_bus - маршрутное такси, </li><li>monorail - монорельс, </li><li>funicular_railway - фуникулёр, </li><li>river_transport - речной транспорт, </li><li>cable_car - канатная дорога, </li><li>light_rail - легкорельсовый транспорт, </li><li>premetro - подземный трамвай, </li><li>mcc - Московское центральное кольцо, </li><li>mcd - Московские центральные диаметры, </li></ul>"
+      }
+    }
+  }
+}

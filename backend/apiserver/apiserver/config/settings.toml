@@ -1,0 +1,20 @@
+# Общие настройки для всех окружений
+[default]
+# Используем для всех настроек нижний регистр, Dynaconf позволяет получать их в любом стиле
+environment = "development"
+debug = true
+api_v1_str = "/api/v1"
+project_name = "API Server"
+
+# Настройки для разработки
+[development]
+debug = true
+
+# Настройки для тестирования
+[testing]
+debug = true
+
+# Настройки для продакшена
+[production]
+debug = false
+station_workload_url = "http://station-workload:8080"
