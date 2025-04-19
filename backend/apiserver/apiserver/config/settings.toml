@@ -16,4 +16,5 @@ debug = true
 
 # Настройки для продакшена
 [production]
-debug = false 
+debug = false
+station_workload_url = "http://station-workload:8080"

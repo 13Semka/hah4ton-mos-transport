@@ -42,10 +42,15 @@ test:
 
 # Run linters
 lint:
-	$(POETRY) run flake8 .
+	$(POETRY) run flake8 --format=pylint . 
 	$(POETRY) run mypy .
-	$(POETRY) run black . --check
-	$(POETRY) run isort . --check-only
+	$(POETRY) run black .
+	$(POETRY) run isort .
+
+# Сборка и запуск в Docker контейнере
+docker:
+	docker build -t $(APP_NAME) .
+	docker run -p 8000:8000 --env-file .env $(APP_NAME)
 
 # Format code
 format:

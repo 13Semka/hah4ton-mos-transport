@@ -11,6 +11,7 @@ from loguru import logger
 from datetime import datetime
 
 from apiserver.app.services.public_transport import PublicTransportService
+from apiserver.app.services.transport_workload import TransportWorkloadService
 from apiserver.config.settings import settings
 from apiserver.app.api.v1.schemas.routes import RouteByCoordinatesRequest, RouteResponse
 
@@ -18,8 +19,8 @@ from apiserver.app.api.v1.schemas.routes import RouteByCoordinatesRequest, Route
 router = APIRouter()
 
 
-@router.post("/coordinates")
-async def get_routes_by_coordinates(request: RouteByCoordinatesRequest):
+@router.post("/create_routes")
+async def create_routes_by_coordinates(request: RouteByCoordinatesRequest):
     """
     Получить оптимальные маршруты для пользователя
     """
@@ -37,15 +38,15 @@ async def get_routes_by_coordinates(request: RouteByCoordinatesRequest):
     )
     logger.info(f"Найдено {len(stops_start)} остановок общественного транспорта у начальной точки")
     logger.info(f"Найдено {len(stops_end)} остановок общественного транспорта у конечной точки")
-    
+
     # Проверяем, что найдены остановки как у начальной, так и у конечной точки
     if not stops_start or not stops_end:
         logger.warning("Не найдены остановки у начальной или конечной точки")
         return []
-    
+
     # Создаем список для хранения всех найденных маршрутов
     all_routes = []
-    
+
     # Для каждой пары остановок строим маршрут
     for start_stop in stops_start:
         start_point = start_stop.get('point', {})
@@ -73,10 +74,18 @@ async def get_routes_by_coordinates(request: RouteByCoordinatesRequest):
             if routes:
                 all_routes.extend(routes)
 
-    # Сортируем маршруты по времени в пути (если есть)
-    all_routes.sort(key=lambda x: x.get('total_duration', float('inf')))
-
     # Возвращаем найденные маршруты
     logger.info(f"Всего построено {len(all_routes)} маршрутов")
 
-    return all_routes
+    transport_workload_service = TransportWorkloadService()
+    all_routes = transport_workload_service.set_routes_workload(all_routes)
+
+    res = [0] * 3
+    all_routes.sort(key=lambda x: x.get('total_duration', float('inf')))
+    res[0] = all_routes[0]
+    all_routes.sort(key=lambda x: x.get('workload', float('inf')))
+    res[2] = all_routes[0]
+
+    res[1] = transport_workload_service.get_pareto_optimal(all_routes)
+
+    return res
