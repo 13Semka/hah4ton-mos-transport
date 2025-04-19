@@ -13,11 +13,11 @@ install-poetry:
 
 # Run application in development mode
 run:
-	$(UVICORN) $(APP_PATH) --reload --host 0.0.0.0 --port 8000
+	$(UVICORN) $(APP_PATH) --reload --host 0.0.0.0 --port 8080
 
 # Run application in production mode
 run-prod:
-	$(UVICORN) $(APP_PATH) --host 0.0.0.0 --port 8000
+	$(UVICORN) $(APP_PATH) --host 0.0.0.0 --port 8080
 
 # Clean cache and temporary files
 clean:

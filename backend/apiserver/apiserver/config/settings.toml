@@ -25,5 +25,5 @@ debug = true
 
 [production]
 debug = false
-station_workload_url = "http://localhost:8080"
+station_workload_url = "http://127.0.0.1:8000/count_people"
 log_level = "WARNING"  # В продакшене повышаем уровень логирования

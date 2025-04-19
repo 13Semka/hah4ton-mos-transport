@@ -32,9 +32,9 @@ class TransportWorkloadService:
         Returns:
             int: Числовое значение загруженности станции.
         """
-        url = f"{settings.station_workload_url}/api/v1/workload"
-        response = httpx.get(url)
-        return response.json()["workload"]
+        url = settings.station_workload_url
+        response = httpx.get(url, params={"station_id": "test_station"})
+        return int(response.text)
 
     def set_routes_workload(self, routes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
