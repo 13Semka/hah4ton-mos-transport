@@ -76,6 +76,23 @@ class RouteViewModel @Inject constructor(
         }
     }
     
+    /**
+     * Выполняет обратное геокодирование - получает адрес по координатам
+     * @param location координаты для геокодирования
+     * @return список результатов геокодирования
+     */
+    suspend fun reverseGeocode(location: LatLng): List<GeocoderResult> {
+        return try {
+            Log.d(TAG, "Reverse geocoding location: $location")
+            val results = geocodingUseCase.reverseGeocode(location)
+            Log.d(TAG, "Found ${results.size} results for location")
+            results
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reverse geocoding", e)
+            emptyList()
+        }
+    }
+    
     fun searchAddress(query: String, isFromAddress: Boolean) {
         if (query.length < 3) return
         

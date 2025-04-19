@@ -6,29 +6,21 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
-import androidx.preference.PreferenceManager
 import android.provider.Settings
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.transportsirius.R
 import com.example.transportsirius.domain.entity.GeocoderResult
 import com.example.transportsirius.domain.entity.RouteOption
@@ -36,7 +28,6 @@ import com.example.transportsirius.presentation.adapter.RouteAdapter
 import com.example.transportsirius.presentation.adapter.SearchResultsAdapter
 import com.example.transportsirius.presentation.base.BaseActivity
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -47,7 +38,6 @@ import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.Polyline
@@ -57,310 +47,224 @@ import java.io.File
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
-    companion object {
-        private const val TAG = "MainActivity"
-        private const val SEARCH_DELAY = 500L // ms
-        private const val MIN_SEARCH_LENGTH = 3
-        private const val DEFAULT_ZOOM = 15.0
+    private val TAG = "MainActivity"
+    private val SEARCH_DELAY = 500L
+    private val MIN_SEARCH_LENGTH = 3
+    private val DEFAULT_ZOOM = 15.0
+    
+    private val viewModel by viewModels<RouteViewModel>()
+    
+    private val binding by lazy {
+        with(android.view.LayoutInflater.from(this)) {
+            val view = inflate(R.layout.activity_main, null)
+            setContentView(view)
+            object {
+                val fromAddressEditText = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.fromAddressEditText)
+                val toAddressEditText = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.toAddressEditText)
+                val getCurrentLocationButton = findViewById<android.widget.ImageButton>(R.id.getCurrentLocationButton)
+                val searchButton = findViewById<android.widget.Button>(R.id.searchButton)
+                val progressBar = findViewById<android.widget.ProgressBar>(R.id.progressBar)
+                val resultText = findViewById<android.widget.TextView>(R.id.resultText)
+                val searchResultsRecyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.searchResultsRecyclerView)
+                val routesRecyclerView = findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.routesRecyclerView)
+                val mapView = findViewById<org.osmdroid.views.MapView>(R.id.mapView)
+            }
+        }
     }
     
-    private val viewModel: RouteViewModel by viewModels()
-    
-    // UI элементы
-    private lateinit var fromAddressEditText: TextInputEditText
-    private lateinit var toAddressEditText: TextInputEditText
-    private lateinit var getCurrentLocationButton: ImageButton
-    private lateinit var searchButton: Button
-    private lateinit var progressBar: ProgressBar
-    private lateinit var resultText: TextView
-    private lateinit var searchResultsRecyclerView: RecyclerView
-    private lateinit var routesRecyclerView: RecyclerView
-    
-    // OSM Карта
-    private lateinit var mapView: MapView
     private var mLocationOverlay: MyLocationNewOverlay? = null
-    private var currentRoute: RouteOption? = null
     private var currentPolyline: Polyline? = null
     private var fromMarker: Marker? = null
     private var toMarker: Marker? = null
     
-    // Адаптеры
-    private lateinit var searchResultsAdapter: SearchResultsAdapter
-    private lateinit var routeAdapter: RouteAdapter
+    private val searchResultsAdapter by lazy { SearchResultsAdapter(::onSearchResultSelected) }
+    private val routeAdapter by lazy { RouteAdapter(::drawRouteOnMap) }
     
-    // Для обработки ввода с задержкой
     private var searchJob: Job? = null
-    private var isEditingFromAddress = true
     private var isUserTyping = false
-    
-    // Тип адреса, с которым сейчас работаем
     private var currentAddressType = AddressType.FROM
     
-    enum class AddressType {
-        FROM, TO
-    }
+    enum class AddressType { FROM, TO }
     
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
-        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
-        
         when {
-            fineLocationGranted || coarseLocationGranted -> {
-                // Разрешения получены, можно получить местоположение
-                Log.d(TAG, "Location permissions granted")
+            permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true -> {
                 Toast.makeText(this, "Разрешения на определение местоположения получены", Toast.LENGTH_SHORT).show()
                 refreshCurrentLocation()
                 setupMapMyLocation()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
-                // Пользователь отклонил разрешения, но еще можно показать объяснение
                 showLocationPermissionExplanationDialog()
             }
-            else -> {
-                // Пользователь отклонил разрешения и выбрал "больше не спрашивать"
-                showLocationPermissionSettingsDialog()
-            }
+            else -> showLocationPermissionSettingsDialog()
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
         
-        // Инициализация конфигурации OSMDroid
         initOSMDroid()
-        
-        // Инициализация UI элементов
-        initViews()
         setupMapView()
         setupRecyclerViews()
         setupListeners()
         observeViewModel()
-        
-        // Настраиваем обработчики событий для полей ввода
-        setupInputListeners()
-        
-        // Запрашиваем разрешения на локацию при создании активности
         checkAndRequestLocationPermissions()
     }
     
     private fun initOSMDroid() {
-        val ctx = applicationContext
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx))
-        
-        // Устанавливаем User-Agent для запросов к серверам OSM
-        Configuration.getInstance().userAgentValue = "TransportSirius/1.0"
-        
-        // Настраиваем каталог для кэша карт
-        val osmCacheDir = File(cacheDir, "osmdroid")
-        if (!osmCacheDir.exists()) {
-            osmCacheDir.mkdirs()
+        Configuration.getInstance().apply {
+            load(applicationContext, PreferenceManager.getDefaultSharedPreferences(applicationContext))
+            userAgentValue = "TransportSirius/1.0"
+            File(cacheDir, "osmdroid").apply { 
+                mkdirs()
+                osmdroidBasePath = this
+                osmdroidTileCache = File(this, "tiles")
+            }
         }
-        Configuration.getInstance().osmdroidBasePath = osmCacheDir
-        Configuration.getInstance().osmdroidTileCache = File(osmCacheDir, "tiles")
     }
     
-    override fun onResume() {
-        super.onResume()
-        mapView.onResume()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        mapView.onPause()
-    }
+    override fun onResume() { super.onResume(); binding.mapView.onResume() }
+    override fun onPause() { super.onPause(); binding.mapView.onPause() }
     
     private fun setupMapView() {
-        mapView = findViewById(R.id.mapView)
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
-        
-        // Настройка начального положения и масштаба
-        val mapController = mapView.controller
-        mapController.setZoom(DEFAULT_ZOOM)
-        
-        // По умолчанию центрируем карту на Москве
-        val startPoint = GeoPoint(55.7522, 37.6156)
-        mapController.setCenter(startPoint)
-        
-        // Добавляем обработчик нажатия на карту
-        val mapEventsReceiver = object : MapEventsReceiver {
-            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
-                if (p != null) {
-                    // В зависимости от того, какое поле сейчас в фокусе
-                    val result = GeocoderResult(
-                        name = "Выбранная точка",
-                        formattedAddress = "${p.latitude}, ${p.longitude}",
-                        latLng = com.example.transportsirius.domain.entity.LatLng(p.latitude, p.longitude)
-                    )
-                    
-                    if (fromAddressEditText.hasFocus()) {
-                        isEditingFromAddress = true
-                        viewModel.selectSearchResult(result, true)
-                    } else if (toAddressEditText.hasFocus()) {
-                        isEditingFromAddress = false
-                        viewModel.selectSearchResult(result, false)
+        binding.mapView.apply {
+            setTileSource(TileSourceFactory.MAPNIK)
+            setMultiTouchControls(true)
+            controller.setZoom(DEFAULT_ZOOM)
+            controller.setCenter(GeoPoint(55.7522, 37.6156)) // Москва
+            
+            overlays.add(MapEventsOverlay(object : MapEventsReceiver {
+                override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                    p?.let {
+                        val result = GeocoderResult(
+                            name = "Выбранная точка",
+                            formattedAddress = "${p.latitude}, ${p.longitude}",
+                            latLng = com.example.transportsirius.domain.entity.LatLng(p.latitude, p.longitude)
+                        )
+                        
+                        when {
+                            binding.fromAddressEditText.hasFocus() -> viewModel.selectSearchResult(result, true)
+                            binding.toAddressEditText.hasFocus() -> viewModel.selectSearchResult(result, false)
+                        }
+                        return true
                     }
-                    
-                    return true
+                    return false
                 }
-                return false
-            }
-
-            override fun longPressHelper(p: GeoPoint?): Boolean {
-                return false
-            }
+                override fun longPressHelper(p: GeoPoint?) = false
+            }))
         }
-        
-        val mapEventsOverlay = MapEventsOverlay(mapEventsReceiver)
-        mapView.overlays.add(mapEventsOverlay)
     }
     
     private fun setupMapMyLocation() {
-        if (hasLocationPermission()) {
-            // Настраиваем отображение текущего местоположения
-            mLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
-            mLocationOverlay?.enableMyLocation()
-            mLocationOverlay?.enableFollowLocation()
-            mapView.overlays.add(mLocationOverlay)
-            
-            // Добавляем кнопку для центрирования на текущем местоположении
-            try {
-                val compassOverlay = org.osmdroid.views.overlay.compass.CompassOverlay(
-                    this, mapView
-                )
-                compassOverlay.enableCompass()
-                mapView.overlays.add(compassOverlay)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error adding compass overlay", e)
-            }
+        if (!hasLocationPermission()) return
+        
+        mLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), binding.mapView).apply {
+            enableMyLocation()
+            enableFollowLocation()
+            binding.mapView.overlays.add(this)
+        }
+        
+        try {
+            binding.mapView.overlays.add(
+                org.osmdroid.views.overlay.compass.CompassOverlay(this, binding.mapView).apply {
+                    enableCompass()
+                }
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding compass overlay", e)
         }
     }
     
     private fun updateMapWithLocations() {
-        // Очищаем предыдущие маркеры
-        fromMarker?.let { mapView.overlays.remove(it) }
-        toMarker?.let { mapView.overlays.remove(it) }
+        fromMarker?.let { binding.mapView.overlays.remove(it) }
+        toMarker?.let { binding.mapView.overlays.remove(it) }
         
-        // Добавляем маркер "Откуда", если координаты есть
         viewModel.fromLocation.value?.let { location ->
-            val fromGeoPoint = GeoPoint(location.latitude, location.longitude)
-            fromMarker = Marker(mapView).apply {
-                position = fromGeoPoint
+            fromMarker = Marker(binding.mapView).apply {
+                position = GeoPoint(location.latitude, location.longitude)
                 title = "Откуда"
                 snippet = viewModel.fromAddress.value
                 icon = ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_location)
+                binding.mapView.overlays.add(this)
+                binding.mapView.controller.animateTo(position)
             }
-            mapView.overlays.add(fromMarker)
-            
-            // Перемещаем камеру к начальной точке
-            mapView.controller.animateTo(fromGeoPoint)
         }
         
-        // Добавляем маркер "Куда", если координаты есть
         viewModel.toLocation.value?.let { location ->
-            val toGeoPoint = GeoPoint(location.latitude, location.longitude)
-            toMarker = Marker(mapView).apply {
-                position = toGeoPoint
+            toMarker = Marker(binding.mapView).apply {
+                position = GeoPoint(location.latitude, location.longitude)
                 title = "Куда"
                 snippet = viewModel.toAddress.value
                 icon = ContextCompat.getDrawable(this@MainActivity, R.drawable.ic_destination)
+                binding.mapView.overlays.add(this)
             }
-            mapView.overlays.add(toMarker)
         }
         
-        mapView.invalidate()
+        binding.mapView.invalidate()
     }
     
     private fun drawRouteOnMap(route: RouteOption) {
-        // Сначала удаляем предыдущую линию маршрута
-        currentPolyline?.let { mapView.overlays.remove(it) }
+        currentPolyline?.let { binding.mapView.overlays.remove(it) }
         
-        // Преобразуем координаты из domain модели в GeoPoint
-        val points = mutableListOf<GeoPoint>()
-        for (point in route.points) {
-            points.add(GeoPoint(point.latitude, point.longitude))
-        }
+        val points = route.points.map { GeoPoint(it.latitude, it.longitude) }
+        if (points.isEmpty()) return
         
-        // Создаем и добавляем полилинию на карту
         currentPolyline = Polyline().apply {
             setPoints(points)
-            outlinePaint.color = ContextCompat.getColor(this@MainActivity, R.color.purple_500)
+            outlinePaint.color = ContextCompat.getColor(this@MainActivity, R.color.route_line)
             outlinePaint.strokeWidth = 8f
-            infoWindow = null
+            binding.mapView.overlays.add(this)
         }
-        mapView.overlays.add(currentPolyline)
-        currentRoute = route
         
-        // Если у маршрута есть точки, перемещаем камеру, чтобы показать весь маршрут
-        if (points.isNotEmpty()) {
-            try {
-                // Создаем BoundingBox вручную
-                var north = -90.0
-                var south = 90.0
-                var east = -180.0
-                var west = 180.0
-                
-                for (point in points) {
-                    north = north.coerceAtLeast(point.latitude)
-                    south = south.coerceAtMost(point.latitude)
-                    east = east.coerceAtLeast(point.longitude)
-                    west = west.coerceAtMost(point.longitude)
-                }
-                
-                // Добавляем отступы
-                val padding = 0.01 // ~1 км
-                north += padding
-                south -= padding
-                east += padding
-                west -= padding
-                
-                val boundingBox = BoundingBox(north, east, south, west)
-                mapView.zoomToBoundingBox(boundingBox, true, 100)
-            } catch (e: Exception) {
-                Log.e(TAG, "Error zooming to route bounds", e)
-                // Если не удалось показать весь маршрут, показываем первую точку
-                if (points.isNotEmpty()) {
-                    mapView.controller.animateTo(points[0])
-                }
+        try {
+            val boundingBox = points.fold(
+                BoundingBox(points[0].latitude, points[0].longitude, points[0].latitude, points[0].longitude)
+            ) { box, point ->
+                BoundingBox(
+                    maxOf(box.latNorth, point.latitude),
+                    maxOf(box.lonEast, point.longitude),
+                    minOf(box.latSouth, point.latitude),
+                    minOf(box.lonWest, point.longitude)
+                )
             }
+            
+            binding.mapView.zoomToBoundingBox(
+                BoundingBox(
+                    boundingBox.latNorth + 0.01,
+                    boundingBox.lonEast + 0.01,
+                    boundingBox.latSouth - 0.01,
+                    boundingBox.lonWest - 0.01
+                ), true, 100
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error zooming to route bounds", e)
+            binding.mapView.controller.animateTo(points[0])
         }
         
-        mapView.invalidate()
+        binding.mapView.invalidate()
     }
     
     private fun checkAndRequestLocationPermissions() {
-        // Сначала проверяем разрешение на запись для OSMDroid для API < 29
         if (android.os.Build.VERSION.SDK_INT < 29 && 
-            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
-            != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                1
-            )
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 1)
             return
         }
         
-        // Затем проверяем разрешения на геолокацию
         when {
             hasLocationPermission() -> {
-                // Разрешения уже есть, ничего делать не нужно
-                Log.d(TAG, "Location permissions already granted")
                 refreshCurrentLocation()
                 setupMapMyLocation()
             }
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION) ||
             shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION) -> {
-                // Пользователь ранее отказал в разрешениях, показываем объяснение
                 showLocationPermissionExplanationDialog()
             }
-            else -> {
-                // Запрашиваем разрешения впервые
-                requestLocationPermissions()
-            }
+            else -> requestLocationPermissions()
         }
     }
     
@@ -368,10 +272,8 @@ class MainActivity : BaseActivity() {
         AlertDialog.Builder(this)
             .setTitle("Необходимы разрешения")
             .setMessage("Для определения вашего текущего местоположения, необходимо разрешение на доступ к геолокации устройства.")
-            .setPositiveButton("Предоставить") { _, _ ->
-                requestLocationPermissions()
-            }
-            .setNegativeButton("Отмена") { _, _ ->
+            .setPositiveButton("Предоставить") { _, _ -> requestLocationPermissions() }
+            .setNegativeButton("Отмена") { _, _ -> 
                 Toast.makeText(this, "Для определения местоположения необходимы разрешения", Toast.LENGTH_SHORT).show()
             }
             .setCancelable(false)
@@ -382,9 +284,10 @@ class MainActivity : BaseActivity() {
         AlertDialog.Builder(this)
             .setTitle("Разрешения отклонены")
             .setMessage("Без разрешения на доступ к геолокации мы не сможем определить ваше местоположение. Пожалуйста, предоставьте разрешение в настройках приложения.")
-            .setPositiveButton("Настройки") { _, _ ->
-                // Открываем настройки приложения
-                openAppSettings()
+            .setPositiveButton("Настройки") { _, _ -> 
+                startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.fromParts("package", packageName, null)
+                })
             }
             .setNegativeButton("Отмена") { _, _ ->
                 Toast.makeText(this, "Будет использоваться местоположение по умолчанию", Toast.LENGTH_SHORT).show()
@@ -393,182 +296,86 @@ class MainActivity : BaseActivity() {
             .show()
     }
     
-    private fun openAppSettings() {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.fromParts("package", packageName, null)
-        }
-        startActivity(intent)
-    }
+    private fun requestLocationPermissions() =
+        locationPermissionRequest.launch(arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ))
     
-    private fun requestLocationPermissions() {
-        Log.d(TAG, "Requesting location permissions")
-        locationPermissionRequest.launch(
-            arrayOf(
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            )
-        )
-    }
-    
-    private fun refreshCurrentLocation() {
-        Log.d(TAG, "Refreshing current location")
-        viewModel.getCurrentLocation()
-    }
-    
-    private fun initViews() {
-        // Инициализация UI элементов
-        fromAddressEditText = findViewById(R.id.fromAddressEditText)
-        toAddressEditText = findViewById(R.id.toAddressEditText)
-        getCurrentLocationButton = findViewById(R.id.getCurrentLocationButton)
-        searchButton = findViewById(R.id.searchButton)
-        progressBar = findViewById(R.id.progressBar)
-        resultText = findViewById(R.id.resultText)
-        searchResultsRecyclerView = findViewById(R.id.searchResultsRecyclerView)
-        routesRecyclerView = findViewById(R.id.routesRecyclerView)
-        
-        // Обработчик для кнопки текущего местоположения
-        getCurrentLocationButton.setOnClickListener {
-            viewModel.getCurrentLocation()
-        }
-        
-        // Обработчик для кнопки поиска маршрута
-        searchButton.setOnClickListener {
-            viewModel.loadRoutes()
-        }
-    }
+    private fun refreshCurrentLocation() = viewModel.getCurrentLocation()
     
     private fun setupRecyclerViews() {
-        // Настраиваем адаптер для результатов поиска
-        searchResultsAdapter = SearchResultsAdapter { result ->
-            onSearchResultSelected(result)
+        binding.searchResultsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = searchResultsAdapter
         }
-        searchResultsRecyclerView.layoutManager = LinearLayoutManager(this)
-        searchResultsRecyclerView.adapter = searchResultsAdapter
         
-        // Настраиваем адаптер для маршрутов
-        routeAdapter = RouteAdapter { route ->
-            // Обработчик нажатия на маршрут
-            drawRouteOnMap(route)
+        binding.routesRecyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = routeAdapter
         }
-        routesRecyclerView.layoutManager = LinearLayoutManager(this)
-        routesRecyclerView.adapter = routeAdapter
     }
     
     private fun setupListeners() {
-        // Кнопка определения текущего местоположения
-        getCurrentLocationButton.setOnClickListener {
+        binding.getCurrentLocationButton.setOnClickListener {
             if (hasLocationPermission()) {
                 refreshCurrentLocation()
-                Snackbar.make(
-                    findViewById(android.R.id.content),
-                    "Обновляем ваше местоположение...",
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                showSnackbar("Обновляем ваше местоположение...")
             } else {
                 checkAndRequestLocationPermissions()
             }
         }
         
-        // Кнопка поиска маршрутов
-        searchButton.setOnClickListener {
+        binding.searchButton.setOnClickListener {
             hideSearchResults()
             viewModel.loadRoutes()
         }
-    }
-    
-    private fun setupInputListeners() {
-        // Обработчик события фокуса на поле "Откуда"
-        fromAddressEditText.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                currentAddressType = AddressType.FROM
+        
+        binding.fromAddressEditText.apply {
+            setOnFocusChangeListener { _, hasFocus -> if (hasFocus) currentAddressType = AddressType.FROM }
+            addTextChangedListener(createTextWatcher(AddressType.FROM))
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_NEXT) {
+                    autoCompleteCurrentAddress()
+                    binding.toAddressEditText.requestFocus()
+                    true
+                } else false
             }
         }
         
-        // Обработчик события фокуса на поле "Куда"
-        toAddressEditText.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                currentAddressType = AddressType.TO
+        binding.toAddressEditText.apply {
+            setOnFocusChangeListener { _, hasFocus -> if (hasFocus) currentAddressType = AddressType.TO }
+            addTextChangedListener(createTextWatcher(AddressType.TO))
+            setOnEditorActionListener { _, actionId, _ ->
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    autoCompleteCurrentAddress()
+                    hideKeyboard()
+                    if (binding.fromAddressEditText.text?.isNotEmpty() == true && 
+                        binding.toAddressEditText.text?.isNotEmpty() == true) {
+                        hideSearchResults()
+                        viewModel.loadRoutes()
+                    }
+                    true
+                } else false
             }
-        }
-        
-        // Обработчик ввода текста для поля "Откуда"
-        fromAddressEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                currentAddressType = AddressType.FROM
-                s?.toString()?.let { query ->
-                    searchWithDelay(query)
-                }
-            }
-            
-            override fun afterTextChanged(s: Editable?) {}
-        })
-        
-        // Обработчик ввода текста для поля "Куда"
-        toAddressEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                currentAddressType = AddressType.TO
-                s?.toString()?.let { query ->
-                    searchWithDelay(query)
-                }
-            }
-            
-            override fun afterTextChanged(s: Editable?) {}
-        })
-        
-        // Обработчик нажатия кнопки Done на клавиатуре для поля "Откуда"
-        fromAddressEditText.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
-                // Автозаполнение адреса, если есть результаты поиска
-                autoCompleteCurrentAddress()
-                // Переход к следующему полю
-                toAddressEditText.requestFocus()
-                return@setOnEditorActionListener true
-            }
-            false
-        }
-        
-        // Обработчик нажатия кнопки Done на клавиатуре для поля "Куда"
-        toAddressEditText.setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-                // Автозаполнение адреса, если есть результаты поиска
-                autoCompleteCurrentAddress()
-                // Скрытие клавиатуры
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-                // Если оба поля заполнены, выполняем поиск маршрута
-                if (fromAddressEditText.text?.isNotEmpty() == true && toAddressEditText.text?.isNotEmpty() == true) {
-                    hideSearchResults()
-                    viewModel.loadRoutes()
-                }
-                return@setOnEditorActionListener true
-            }
-            false
         }
     }
     
-    private fun autoCompleteCurrentAddress() {
-        // Получаем первый результат из списка результатов поиска
-        val firstResult = viewModel.searchResults.value?.firstOrNull()
-        if (firstResult != null) {
-            // Применяем выбранный результат
-            onSearchResultSelected(firstResult)
+    private fun createTextWatcher(type: AddressType) = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            currentAddressType = type
+            s?.toString()?.let { searchWithDelay(it) }
         }
+        override fun afterTextChanged(s: Editable?) {}
     }
     
-    private fun hasLocationPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(
-            this,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
-    }
+    private fun autoCompleteCurrentAddress() =
+        viewModel.searchResults.value?.firstOrNull()?.let { onSearchResultSelected(it) }
+    
+    private fun hasLocationPermission() =
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+        ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
     
     private fun searchWithDelay(query: String) {
         searchJob?.cancel()
@@ -579,195 +386,130 @@ class MainActivity : BaseActivity() {
         }
         
         searchJob = lifecycleScope.launch {
-            delay(SEARCH_DELAY) // Задержка для избежания частых запросов
-            viewModel.searchAddress(query, isEditingFromAddress)
+            delay(SEARCH_DELAY)
+            viewModel.searchAddress(query, currentAddressType == AddressType.FROM)
             isUserTyping = false
         }
     }
     
     private fun onSearchResultSelected(result: GeocoderResult) {
-        // Обновляем соответствующее поле в зависимости от текущего типа адреса
         when (currentAddressType) {
             AddressType.FROM -> {
-                fromAddressEditText.setText(result.name)
+                binding.fromAddressEditText.setText(result.name)
                 viewModel.setFromAddress(result)
             }
             AddressType.TO -> {
-                toAddressEditText.setText(result.name)
+                binding.toAddressEditText.setText(result.name)
                 viewModel.setToAddress(result)
             }
         }
         
-        // Скрываем список результатов
         hideSearchResults()
         
-        // Если заполнены оба поля, выполняем поиск маршрута автоматически
-        if (fromAddressEditText.text?.isNotEmpty() == true && toAddressEditText.text?.isNotEmpty() == true) {
+        if (currentAddressType == AddressType.FROM && binding.toAddressEditText.text?.isEmpty() == true) {
+            binding.toAddressEditText.requestFocus()
+        } else {
+            binding.fromAddressEditText.clearFocus()
+            binding.toAddressEditText.clearFocus()
+            hideKeyboard()
+        }
+        
+        if (binding.fromAddressEditText.text?.isNotEmpty() == true && 
+            binding.toAddressEditText.text?.isNotEmpty() == true) {
             viewModel.loadRoutes()
         }
-        
-        // Переносим фокус на следующее поле или скрываем клавиатуру если оба поля заполнены
-        if (currentAddressType == AddressType.FROM && toAddressEditText.text?.isEmpty() == true) {
-            toAddressEditText.requestFocus()
-        } else {
-            // Убираем фокус с полей ввода
-            fromAddressEditText.clearFocus()
-            toAddressEditText.clearFocus()
-            
-            // Скрываем клавиатуру
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.hideSoftInputFromWindow(currentFocus?.windowToken, 0)
-        }
     }
     
-    private fun hideSearchResults() {
-        searchResultsRecyclerView.visibility = View.GONE
-    }
+    private fun hideKeyboard() =
+        (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+            .hideSoftInputFromWindow(currentFocus?.windowToken, 0)
     
-    private fun showSearchResults() {
-        searchResultsRecyclerView.visibility = View.VISIBLE
-    }
-    
-    private fun searchAddress(query: String) {
-        if (query.length < 3) {
-            hideSearchResults()
-            return
-        }
-        
-        // Показываем список результатов поиска
-        showSearchResults()
-        
-        // Запускаем поиск адреса в зависимости от текущего типа адреса
-        when (currentAddressType) {
-            AddressType.FROM -> viewModel.searchAddress(query, true)
-            AddressType.TO -> viewModel.searchAddress(query, false)
-        }
-    }
+    private fun hideSearchResults() { binding.searchResultsRecyclerView.visibility = View.GONE }
+    private fun showSearchResults() { binding.searchResultsRecyclerView.visibility = View.VISIBLE }
+    private fun showSnackbar(message: String) = 
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_SHORT).show()
     
     private fun observeViewModel() {
-        // Наблюдаем за адресом "Откуда"
         lifecycleScope.launch {
             viewModel.fromAddress.collectLatest { address ->
                 if (address.isNotEmpty() && !isUserTyping) {
-                    fromAddressEditText.setText(address)
+                    binding.fromAddressEditText.setText(address)
                 }
             }
         }
         
-        // Наблюдаем за адресом "Куда"
         lifecycleScope.launch {
             viewModel.toAddress.collectLatest { address ->
                 if (address.isNotEmpty() && !isUserTyping) {
-                    toAddressEditText.setText(address)
+                    binding.toAddressEditText.setText(address)
                 }
             }
         }
         
-        // Наблюдаем за изменениями локаций для обновления карты
         lifecycleScope.launch {
             viewModel.fromLocation.collectLatest { location ->
-                if (location != null) {
-                    updateMapWithLocations()
-                }
+                if (location != null) updateMapWithLocations()
             }
         }
         
         lifecycleScope.launch {
             viewModel.toLocation.collectLatest { location ->
-                if (location != null) {
-                    updateMapWithLocations()
-                }
+                if (location != null) updateMapWithLocations()
             }
         }
         
-        // Наблюдаем за состоянием загрузки
         lifecycleScope.launch {
             viewModel.isLoading.collectLatest { isLoading ->
-                progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
-                searchButton.isEnabled = !isLoading
-                getCurrentLocationButton.isEnabled = !isLoading
+                binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+                binding.searchButton.isEnabled = !isLoading
+                binding.getCurrentLocationButton.isEnabled = !isLoading
             }
         }
         
-        // Наблюдаем за результатами поиска адресов
         viewModel.searchResults.observe(this) { results ->
             searchResultsAdapter.submitList(results)
-            
-            // Показываем результаты поиска, когда они доступны
-            showSearchResults()
+            if (results.isNotEmpty()) showSearchResults()
         }
         
-        // Наблюдаем за маршрутами
         viewModel.routes.observe(this) { routes ->
-            resultText.visibility = View.VISIBLE
-            resultText.text = "Найдено маршрутов: ${routes.size}"
+            binding.resultText.apply {
+                visibility = View.VISIBLE
+                text = "Найдено маршрутов: ${routes.size}"
+            }
             
             if (routes.isNotEmpty()) {
                 routeAdapter.submitList(routes)
-                routesRecyclerView.visibility = View.VISIBLE
-                
-                // Отображаем первый маршрут на карте
+                binding.routesRecyclerView.visibility = View.VISIBLE
                 drawRouteOnMap(routes.first())
             } else {
-                routesRecyclerView.visibility = View.GONE
+                binding.routesRecyclerView.visibility = View.GONE
                 Toast.makeText(this, "Маршруты не найдены", Toast.LENGTH_SHORT).show()
             }
         }
         
-        // Наблюдаем за ошибками
         viewModel.error.observe(this) { error ->
-            if (error != null) {
-                Snackbar.make(
-                    findViewById(android.R.id.content),
-                    error,
-                    Snackbar.LENGTH_LONG
-                ).setAction("OK") {
-                    viewModel.clearError()
-                }.show()
+            error?.let {
+                Snackbar.make(findViewById(android.R.id.content), it, Snackbar.LENGTH_LONG)
+                    .setAction("OK") { viewModel.clearError() }
+                    .show()
             }
         }
     }
     
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         
-        if (requestCode == 1 && grantResults.isNotEmpty() && 
-            grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // Если получили разрешение на запись, теперь проверяем разрешения на геолокацию
+        if (requestCode == 1 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             checkAndRequestLocationPermissions()
         } else if (requestCode == 1) {
-            // Разрешение на запись не получено
-            Toast.makeText(
-                this, 
-                "Без разрешения на запись карты могут не работать корректно",
-                Toast.LENGTH_LONG
-            ).show()
-            // Все равно продолжаем и проверяем разрешения на геолокацию
-            when {
-                hasLocationPermission() -> {
-                    refreshCurrentLocation()
-                    setupMapMyLocation()
-                }
-                else -> {
-                    requestLocationPermissions()
-                }
+            Toast.makeText(this, "Без разрешения на запись карты могут не работать корректно", Toast.LENGTH_LONG).show()
+            
+            if (hasLocationPermission()) {
+                refreshCurrentLocation()
+                setupMapMyLocation()
+            } else {
+                requestLocationPermissions()
             }
         }
-    }
-    
-    // Функция для отображения секции маршрутов
-    private fun showRoutesSection() {
-        routesRecyclerView.visibility = View.VISIBLE
-        resultText.visibility = View.VISIBLE
-    }
-    
-    // Функция для скрытия секции маршрутов
-    private fun hideRoutesSection() {
-        routesRecyclerView.visibility = View.GONE
-        resultText.visibility = View.GONE
     }
 }
