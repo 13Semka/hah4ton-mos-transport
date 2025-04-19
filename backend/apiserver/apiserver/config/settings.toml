@@ -12,7 +12,7 @@ two_gis_base_url = "https://catalog.api.2gis.com/3.0/items"  # Базовый UR
 
 # Параметры для построения маршрутов
 transport_search_radius = 500    # Радиус поиска транспорта (метры)
-max_stop_count = 5               # Максимальное количество остановок для поиска
+max_stop_count = 3               # Максимальное количество остановок для поиска
 
 # Настройки журналирования
 log_level = "DEBUG"               # Уровень логирования (DEBUG, INFO, WARNING, ERROR, CRITICAL)

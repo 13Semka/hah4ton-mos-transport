@@ -59,3 +59,19 @@ API Сервер - это бэкенд-сервис для построения 
   Документация API доступна по адресу:
    - Swagger UI: http://localhost:8000/api/v1/docs
    - ReDoc: http://localhost:8000/api/v1/redoc
+
+
+Example of request body coordinates:
+```json
+{
+  "start": {
+    "latitude": 43.401056,
+    "longitude": 39.956288
+  },
+  "end": {
+    "latitude": 43.401544,
+    "longitude": 39.978169
+  },
+  "transport_type": "public_transport"
+}
+```
