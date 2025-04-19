@@ -59,10 +59,10 @@ async def get_routes_by_coordinates(request: RouteByCoordinatesRequest):
             end_point = end_stop.get('point', {})
             end_lat = end_point.get('lat')
             end_lon = end_point.get('lon')
-            
+
             if not end_lat or not end_lon:
                 continue
-                
+
             # Строим маршрут между остановками
             routes = await transport_service.build_public_transport_route(
                 start_lat=start_lat,
@@ -72,11 +72,11 @@ async def get_routes_by_coordinates(request: RouteByCoordinatesRequest):
             )
             if routes:
                 all_routes.extend(routes)
-    
+
     # Сортируем маршруты по времени в пути (если есть)
     all_routes.sort(key=lambda x: x.get('total_duration', float('inf')))
-    
+
     # Возвращаем найденные маршруты
     logger.info(f"Всего построено {len(all_routes)} маршрутов")
-    
+
     return all_routes
