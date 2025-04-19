@@ -42,7 +42,6 @@ class PublicTransportService:
             "sort": "distance",
             "radius": 10000,
             "type": "station",
-            "limit": 50,
         }
 
         async with httpx.AsyncClient() as client:
@@ -137,7 +136,6 @@ class PublicTransportService:
             "sort": "distance",
             "type": "station",
             "radius": int(search_radius),
-            "limit": settings.get("MAX_STOP_COUNT", 5),
         }
 
         async with httpx.AsyncClient() as client:
@@ -146,7 +144,7 @@ class PublicTransportService:
                 data = response.json()
                 stops = data.get("result", {}).get("items", [])
 
-                return stops
+                return stops[: min(settings.get("MAX_STOP_COUNT", 5), len(stops))]
 
             return []
 

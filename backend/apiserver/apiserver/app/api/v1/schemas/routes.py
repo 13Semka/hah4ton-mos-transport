@@ -15,8 +15,8 @@ class RouteByCoordinatesRequest(BaseModel):
 
 
 class RouteResponse(BaseModel):
-    distance: float
-    duration: int
-    ui_distance: str
-    ui_duration: str
-    points: List[Dict]
+    """Ответ с маршрутами"""
+
+    fastest_route: dict | None
+    balanced_route: dict | None
+    least_crowded_route: dict | None

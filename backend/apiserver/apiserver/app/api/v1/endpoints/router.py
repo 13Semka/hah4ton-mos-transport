@@ -3,14 +3,16 @@
 """
 from fastapi import APIRouter
 
+from apiserver.config.settings import settings
+
 from .routes import routes
 from .status import status
 
 # Создаем основной роутер
-endpoints_router = APIRouter()
+api_router = APIRouter(prefix=settings.get("api_v1_str", "/api/v1"))
 
 # Подключаем роутер для работы со статусом
-endpoints_router.include_router(status.router, prefix="", tags=["status"])
+api_router.include_router(status.router, prefix="", tags=["status"])
 
 # Подключаем роутер для работы с маршрутами
-endpoints_router.include_router(routes.router, prefix="/routes", tags=["routes"])
+api_router.include_router(routes.router, prefix="/routes", tags=["routes"])

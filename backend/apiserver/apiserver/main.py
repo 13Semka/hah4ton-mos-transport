@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
-from apiserver.app.api.v1.endpoints.router import endpoints_router
+from apiserver.app.api.v1.endpoints.router import api_router
 from apiserver.config.settings import settings
 
 # Настройка логирования
@@ -17,7 +17,7 @@ logger.remove()  # Удаляем стандартный обработчик
 logger.add(
     sys.stdout,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
-    level="INFO",
+    level=settings.log_level,
 )
 
 # Создаем директорию для логов, если её нет
@@ -25,10 +25,10 @@ os.makedirs("logs", exist_ok=True)
 
 logger.add(
     "logs/app.log",
-    rotation="1 day",
-    retention="7 days",
+    rotation=settings.log_rotation_period,
+    retention=settings.log_retention_period,
     format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
-    level="INFO",
+    level=settings.log_level,
 )
 
 
@@ -62,4 +62,4 @@ app.add_middleware(
 )
 
 # Подключаем API роутер
-app.include_router(endpoints_router)
+app.include_router(api_router)
